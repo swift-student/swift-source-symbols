@@ -1,0 +1,37 @@
+{
+  "declarations": [
+    {
+      "name": "Café",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        36,
+        41
+      ],
+      "declarationRange": [
+        29,
+        94
+      ]
+    },
+    {
+      "name": "café",
+      "kind": "method",
+      "scopes": [
+        "Café"
+      ],
+      "identifierRange": [
+        48,
+        54
+      ],
+      "declarationRange": [
+        44,
+        90
+      ]
+    }
+  ],
+  "diagnosticRanges": [],
+  "qualifiedNames": [
+    "Café",
+    "Café#café"
+  ]
+}

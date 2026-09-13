@@ -14,8 +14,15 @@ let package = Package(
                 exclude: ["LICENSE", "PROVENANCE.md", "SHA256SUMS"],
                 sources: ["src/parser.c", "src/scanner.c"], publicHeadersPath: "include",
                 cSettings: [.headerSearchPath("src")]),
+        .target(name: "TreeSitterRubyGrammar", path: "Vendor/tree-sitter-ruby",
+                exclude: ["LICENSE", "PROVENANCE.md", "SHA256SUMS"],
+                sources: ["src/parser.c", "src/scanner.c"], publicHeadersPath: "include",
+                cSettings: [.headerSearchPath("src")]),
         .target(name: "SourceSymbols", dependencies: [
-            "SourceSymbolsCore", "TreeSitterSwiftGrammar", .product(name: "TreeSitter", package: "tree-sitter"),
+            "SourceSymbolsCore", "TreeSitterSwiftGrammar", "TreeSitterRubyGrammar", .product(
+                name: "TreeSitter",
+                package: "tree-sitter"
+            ),
         ]),
         .executableTarget(name: "UsageExample", dependencies: ["SourceSymbols"], path: "Examples"),
         .testTarget(name: "SourceSymbolsCoreTests", dependencies: ["SourceSymbolsCore"]),

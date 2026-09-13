@@ -1,7 +1,7 @@
 # API contract
 
 SourceSymbols operates on immutable in-memory `SourceSnapshot` values with an
-explicit `SourceLanguage` enum, currently containing only Swift. Each newly
+explicit `SourceLanguage` enum containing `.swift` and `.ruby`. Each newly
 initialized snapshot has a unique identity; copies retain that identity.
 The package has one public product and consumer import, `SourceSymbols`, bundling
 the available backends. Shared models and matching live in the parser-independent
@@ -21,9 +21,10 @@ both encodings. Line/column and editor-specific adapters remain consumer work.
 
 ## Extraction and ranges
 
-`TreeSitterSwiftExtractor` implements the synchronous, throwing, `Sendable`
-`DeclarationExtractor` protocol. It parses Swift text directly as UTF-8 using
-Tree-sitter Swift 0.7.3 and runtime 0.25.10. Each call creates and disposes its own
+`TreeSitterSwiftExtractor` and `TreeSitterRubyExtractor` implement the synchronous,
+throwing, `Sendable` `DeclarationExtractor` protocol. They parse text directly as
+UTF-8 using Tree-sitter Swift 0.7.3 or Ruby 0.23.1 and runtime 0.25.10.
+Each extractor accepts only its corresponding language. Each call creates and disposes its own
 parser/tree; it may be called concurrently. No backend pointer escapes in a result.
 The input length is checked against Tree-sitter's 32-bit byte limit before parsing.
 
@@ -70,8 +71,8 @@ should omit the entire signature instead of representing damaged types as absent
 
 Passing styles are positional, keyword, variadic positional, variadic keyword, and
 block. Positional parameters may have labels; Swift's ordered labeled arguments
-remain positional. These model cases do not imply that a corresponding language
-backend is implemented. Default expressions are excluded, but their presence is
+remain positional. Ruby keyword, rest, and block parameters use their respective
+passing styles. Default expressions are excluded, but their presence is
 recorded. Exact signature equality includes all parameter fields, including local
 names, passing styles, and default presence. Use a callable-name or parameter-type
 query when those extra distinctions are irrelevant.
@@ -114,6 +115,33 @@ let match = DeclarationMatcher.match(
 // Independently inspect result.diagnostics, even when match is unique.
 ```
 
+## Ruby extraction and lookup
+
+Use `SourceSnapshot(text: sourceText, language: .ruby)` with
+`TreeSitterRubyExtractor`. Classes and modules are `type` declarations; method
+syntax (including `initialize`) and static aliases are `method`; singleton class
+bodies are `extensionScope`; constant assignment candidates are `variable`.
+Repeated definitions and reopened classes remain distinct, in traversal order.
+
+Namespace paths use `::`, instance methods use `#`, and singleton methods use `.`:
+`Shop::Cart`, `Shop::Cart#add`, and `Shop::Cart.build`. Lexical scopes remain separate
+from these lookup strings. Absolute paths retain leading `::`. Constant lookup,
+visibility, and receiver dispatch are not evaluated. Ruby supplies no extra callable
+aliases; queries use the base names with optional structured signature filters.
+
+Ruby parameter annotations are nil. Positional/defaulted, keyword, rest, keyword
+rest, and block parameters retain names, passing styles, and default presence.
+Anonymous `*`, `**`, and `&` parameters retain their channel with a nil name.
+Forwarding (`...`), destructuring, and keyword rejection (`**nil`) are not fully
+represented by the shared model, so those methods have nil signatures. Aliases
+also have nil signatures because their targets are not resolved.
+
+Ruby ranges include delayed heredoc bodies through the closing delimiter. Comments
+outside declarations are excluded. A visibility call such as `private def run; end`
+contributes no token to the method's range, which begins at `def`. See the
+[Ruby backend contract](RUBY_BACKEND.md) for exact qualification examples, recovery,
+coverage, and omitted dynamic declarations.
+
 ## Diagnostics and limitations
 
 Tree-sitter `ERROR` and missing-token nodes produce error-severity `ParseDiagnostic`
@@ -121,17 +149,18 @@ values alongside available declarations. Errors in hidden grammar tokens are rep
 at the nearest visible node when it has no exposed erroneous child. Diagnostics may be zero-width and may
 include overlapping parent/child error ranges. Nodes with missing or erroneous
 names are skipped; a damaged callable header has a nil signature. A successful
-match does not imply a clean parse. These are backend parse diagnostics, not Swift
+match does not imply a clean parse. These are backend parse diagnostics, not language
 compiler/type-checker diagnostics, and known grammar false positives are preserved.
 `ExtractionResult` rejects declaration or diagnostic ranges from other snapshots.
 
 Unsupported languages throw `ExtractionError.unsupportedLanguage`; fatal backend
 setup/parse failures throw `TreeSitterExtractionError`. A clean parser result does
 not guarantee that every declaration category is extracted. See the tested syntax
-and known gaps in [the backend decision](SWIFT_BACKEND.md).
+and known gaps in the [Swift backend decision](SWIFT_BACKEND.md) and
+[Ruby backend contract](RUBY_BACKEND.md).
 
 The package uses Swift tools 6.0, Swift 6 language mode, and a macOS 13 deployment
-minimum. This backend has been locally validated with Swift 6.4 on macOS 26.6.2
+minimum. Both backends have been locally validated with Swift 6.4 on macOS 26.6.2
 (arm64). The configured Swift 6.0/6.2 CI matrix still needs to run against these
 changes; macOS 13 runtime, iOS, and Linux are not validated. SourceKitten execution
 and a SwiftSyntax comparison were intentionally deferred in the issue #6 discussion.

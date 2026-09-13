@@ -1,0 +1,313 @@
+{
+  "declarations": [
+    {
+      "name": "Shop",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        45,
+        49
+      ],
+      "declarationRange": [
+        38,
+        427
+      ]
+    },
+    {
+      "name": "Cart",
+      "kind": "type",
+      "scopes": [
+        "Shop"
+      ],
+      "identifierRange": [
+        58,
+        62
+      ],
+      "declarationRange": [
+        52,
+        330
+      ]
+    },
+    {
+      "name": "VERSION",
+      "kind": "variable",
+      "scopes": [
+        "Shop",
+        "Cart"
+      ],
+      "identifierRange": [
+        74,
+        81
+      ],
+      "declarationRange": [
+        74,
+        87
+      ]
+    },
+    {
+      "name": "initialize",
+      "kind": "method",
+      "scopes": [
+        "Shop",
+        "Cart"
+      ],
+      "identifierRange": [
+        96,
+        106
+      ],
+      "declarationRange": [
+        92,
+        147
+      ]
+    },
+    {
+      "name": "add",
+      "kind": "method",
+      "scopes": [
+        "Shop",
+        "Cart"
+      ],
+      "identifierRange": [
+        156,
+        159
+      ],
+      "declarationRange": [
+        152,
+        218
+      ]
+    },
+    {
+      "name": "build",
+      "kind": "method",
+      "scopes": [
+        "Shop",
+        "Cart"
+      ],
+      "identifierRange": [
+        232,
+        237
+      ],
+      "declarationRange": [
+        223,
+        253
+      ]
+    },
+    {
+      "name": "<< self",
+      "kind": "extensionScope",
+      "scopes": [
+        "Shop",
+        "Cart"
+      ],
+      "identifierRange": [
+        267,
+        271
+      ],
+      "declarationRange": [
+        258,
+        303
+      ]
+    },
+    {
+      "name": "empty?",
+      "kind": "method",
+      "scopes": [
+        "Shop",
+        "Cart",
+        "<< self"
+      ],
+      "identifierRange": [
+        282,
+        288
+      ],
+      "declarationRange": [
+        278,
+        295
+      ]
+    },
+    {
+      "name": "append",
+      "kind": "method",
+      "scopes": [
+        "Shop",
+        "Cart"
+      ],
+      "identifierRange": [
+        314,
+        320
+      ],
+      "declarationRange": [
+        308,
+        324
+      ]
+    },
+    {
+      "name": "Cart",
+      "kind": "type",
+      "scopes": [
+        "Shop"
+      ],
+      "identifierRange": [
+        339,
+        343
+      ],
+      "declarationRange": [
+        333,
+        374
+      ]
+    },
+    {
+      "name": "add",
+      "kind": "method",
+      "scopes": [
+        "Shop",
+        "Cart"
+      ],
+      "identifierRange": [
+        352,
+        355
+      ],
+      "declarationRange": [
+        348,
+        368
+      ]
+    },
+    {
+      "name": "Helpers",
+      "kind": "type",
+      "scopes": [
+        "Shop"
+      ],
+      "identifierRange": [
+        384,
+        391
+      ],
+      "declarationRange": [
+        377,
+        423
+      ]
+    },
+    {
+      "name": "ready?",
+      "kind": "method",
+      "scopes": [
+        "Shop",
+        "Helpers"
+      ],
+      "identifierRange": [
+        400,
+        406
+      ],
+      "declarationRange": [
+        396,
+        417
+      ]
+    },
+    {
+      "name": "Cart",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        440,
+        444
+      ],
+      "declarationRange": [
+        428,
+        536
+      ]
+    },
+    {
+      "name": "[]",
+      "kind": "method",
+      "scopes": [
+        "Shop::Cart"
+      ],
+      "identifierRange": [
+        451,
+        453
+      ],
+      "declarationRange": [
+        447,
+        476
+      ]
+    },
+    {
+      "name": "[]=",
+      "kind": "method",
+      "scopes": [
+        "Shop::Cart"
+      ],
+      "identifierRange": [
+        483,
+        486
+      ],
+      "declarationRange": [
+        479,
+        532
+      ]
+    },
+    {
+      "name": "top",
+      "kind": "method",
+      "scopes": [],
+      "identifierRange": [
+        541,
+        544
+      ],
+      "declarationRange": [
+        537,
+        573
+      ]
+    },
+    {
+      "name": "nested",
+      "kind": "method",
+      "scopes": [
+        "top"
+      ],
+      "identifierRange": [
+        558,
+        564
+      ],
+      "declarationRange": [
+        554,
+        569
+      ]
+    },
+    {
+      "name": "refresh!",
+      "kind": "method",
+      "scopes": [],
+      "identifierRange": [
+        585,
+        593
+      ],
+      "declarationRange": [
+        574,
+        598
+      ]
+    }
+  ],
+  "diagnosticRanges": [],
+  "qualifiedNames": [
+    "Shop",
+    "Shop::Cart",
+    "Shop::Cart::VERSION",
+    "Shop::Cart#initialize",
+    "Shop::Cart#add",
+    "Shop::Cart.build",
+    "Shop::Cart::<< self",
+    "Shop::Cart.empty?",
+    "Shop::Cart#append",
+    "Shop::Cart",
+    "Shop::Cart#add",
+    "Shop::Helpers",
+    "Shop::Helpers#ready?",
+    "Shop::Cart",
+    "Shop::Cart#[]",
+    "Shop::Cart#[]=",
+    "top",
+    "top::nested",
+    "client.refresh!"
+  ]
+}

@@ -2,11 +2,11 @@
 
 A Swift library for extracting and matching source declarations across languages.
 
-Status: initial Tree-sitter Swift extractor with a permanent declaration corpus and a runnable in-memory example. No released package yet.
+Status: Tree-sitter Swift and Ruby extractors with a permanent declaration corpus and a runnable in-memory example. No released package yet.
 
-The API accepts source text and returns declaration names, structured callable signatures, enclosing scopes, diagnostics, and precise source ranges. Extraction and matching remain independent of UI, URLs, editor launching, and Git review snapshots. Initial language candidates are Swift, TypeScript/TSX, Ruby, and Kotlin.
+The API accepts source text and returns declaration names, structured callable signatures, enclosing scopes, diagnostics, and precise source ranges. Extraction and matching remain independent of UI, URLs, editor launching, and Git review snapshots. Swift and Ruby backends are bundled; TypeScript/TSX and Kotlin remain future candidates.
 
-One `SourceSymbols` product bundles the implemented backends. Internally, a parser-independent core owns the shared model and matching; language adapters own syntax and lookup spellings. Callable metadata supports absent type annotations and separate binding names, argument labels, and passing styles. Ruby extraction is planned for the next PR and is not implemented here. See [the architecture](docs/ARCHITECTURE.md).
+One `SourceSymbols` product bundles the implemented backends. Internally, a parser-independent core owns the shared model and matching; language adapters own syntax and lookup spellings. Callable metadata supports absent type annotations and separate binding names, argument labels, and passing styles. Ruby extraction covers classes, modules, methods, singleton scopes, constant assignments, and static aliases. See [the architecture](docs/ARCHITECTURE.md).
 
 The initial Swift backend uses direct Tree-sitter syntax-node traversal. See the [backend decision](docs/SWIFT_BACKEND.md) for tested syntax, permanent grammar regressions, dependency provenance, and the deferred SourceKitten/SwiftSyntax comparisons.
 
@@ -28,7 +28,7 @@ The package foundation and CI are in place. Parser packaging and the documented 
 Run `make check` with Swift and the pinned tools described in
 [CONTRIBUTING.md](CONTRIBUTING.md). Run `swift run UsageExample` for the compiled
 in-memory extraction/matching example in [Examples/main.swift](Examples/main.swift).
-The example extracts two real overloads and selects one by its argument label and parameter type.
+The example matches Swift overloads by label and type, and Ruby definitions by their untyped parameter lists.
 
 The library product and importable module are both `SourceSymbols`. For local
 consumer experiments, add `.package(path: "../swift-source-symbols")` to your
@@ -39,4 +39,4 @@ See [the API decision](docs/API.md) for ranges, snapshot lifetime, matching, par
 diagnostics, and platform limitations. Current validation is Swift 6.4 on macOS;
 Swift 6 language mode and macOS 13 deployment minimum are declared. iOS and Linux
 are not yet validated. Swift extraction is limited to the syntax covered by the
-[backend decision](docs/SWIFT_BACKEND.md); other languages are not implemented.
+[Swift backend decision](docs/SWIFT_BACKEND.md). See the [Ruby backend](docs/RUBY_BACKEND.md) for tested syntax, lookup conventions, and limitations; other languages are not implemented.

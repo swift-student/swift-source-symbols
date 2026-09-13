@@ -1,0 +1,62 @@
+{
+  "declarations": [
+    {
+      "name": "healthy",
+      "kind": "method",
+      "scopes": [],
+      "identifierRange": [
+        4,
+        11
+      ],
+      "declarationRange": [
+        0,
+        30
+      ]
+    },
+    {
+      "name": "body_error",
+      "kind": "method",
+      "scopes": [],
+      "identifierRange": [
+        35,
+        45
+      ],
+      "declarationRange": [
+        31,
+        60
+      ]
+    },
+    {
+      "name": "header_error",
+      "kind": "method",
+      "scopes": [],
+      "identifierRange": [
+        65,
+        77
+      ],
+      "declarationRange": [
+        61,
+        91
+      ]
+    }
+  ],
+  "diagnosticRanges": [
+    [
+      55,
+      56
+    ],
+    [
+      55,
+      56
+    ],
+    [
+      84,
+      85
+    ]
+  ],
+  "qualifiedNames": [
+    "healthy",
+    "body_error",
+    "header_error"
+  ]
+}

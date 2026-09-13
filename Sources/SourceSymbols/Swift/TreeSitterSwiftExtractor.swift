@@ -1,12 +1,4 @@
-import TreeSitter
 import TreeSitterSwiftGrammar
-
-public enum TreeSitterExtractionError: Error, Sendable {
-    case sourceTooLarge
-    case parserUnavailable
-    case incompatibleLanguage
-    case parseFailed
-}
 
 /// Extracts per-file Swift syntax using Tree-sitter Swift 0.7.3 and runtime 0.25.10.
 /// Each call owns its parser and tree. Results contain no backend handles.
@@ -15,60 +7,16 @@ public struct TreeSitterSwiftExtractor: DeclarationExtractor {
 
     public func extract(from snapshot: SourceSnapshot) throws -> ExtractionResult {
         guard snapshot.language == .swift else { throw ExtractionError.unsupportedLanguage(snapshot.language) }
-        guard snapshot.text.utf8.count <= Int(UInt32.max) else { throw TreeSitterExtractionError.sourceTooLarge }
-        guard let parser = ts_parser_new() else { throw TreeSitterExtractionError.parserUnavailable }
-        defer { ts_parser_delete(parser) }
-        guard ts_parser_set_language(parser, tree_sitter_swift()) else {
-            throw TreeSitterExtractionError.incompatibleLanguage
+        return try TreeSitterParser.extract(from: snapshot, language: tree_sitter_swift()) { root in
+            var extraction = SwiftSyntaxExtraction(snapshot: snapshot)
+            return try extraction.extract(root: root)
         }
-        // Pass the actual UTF-8 length, including embedded NULs, rather than strlen.
-        let tree = snapshot.text.withCString {
-            ts_parser_parse_string(parser, nil, $0, UInt32(snapshot.text.utf8.count))
-        }
-        guard let tree else { throw TreeSitterExtractionError.parseFailed }
-        defer { ts_tree_delete(tree) }
-        var extraction = SwiftSyntaxExtraction(snapshot: snapshot)
-        return try extraction.extract(root: SyntaxNode(raw: ts_tree_root_node(tree)))
     }
 }
 
-/// Private, borrowed view. Every use is confined to the lifetime of the owning tree.
-private struct SyntaxNode {
-    let raw: TSNode
-    var kind: String {
-        String(cString: ts_node_type(raw))
-    }
-
-    var start: Int {
-        Int(ts_node_start_byte(raw))
-    }
-
-    var end: Int {
-        Int(ts_node_end_byte(raw))
-    }
-
-    var offsets: Range<Int> {
-        start ..< end
-    }
-
-    var isMissing: Bool {
-        ts_node_is_missing(raw)
-    }
-
-    var hasError: Bool {
-        ts_node_has_error(raw)
-    }
-
-    var isError: Bool {
-        ts_node_is_error(raw)
-    }
-
+private extension SyntaxNode {
     var isTrivia: Bool {
-        ts_node_is_extra(raw) && !isError || kind == "comment" || kind == "multiline_comment"
-    }
-
-    var children: [SyntaxNode] {
-        (0 ..< ts_node_child_count(raw)).map { SyntaxNode(raw: ts_node_child(raw, $0)) }
+        isExtra && !isError || kind == "comment" || kind == "multiline_comment"
     }
 
     var syntaxChildren: [SyntaxNode] {
@@ -88,19 +36,6 @@ private struct SyntaxNode {
             stack.append(contentsOf: fromEnd ? children : children.reversed())
         }
         return nil
-    }
-
-    func field(_ name: String) -> SyntaxNode? {
-        let child = name.withCString { ts_node_child_by_field_name(raw, $0, UInt32(name.utf8.count)) }
-        return ts_node_is_null(child) ? nil : SyntaxNode(raw: child)
-    }
-
-    func children(inField name: String) -> [SyntaxNode] {
-        (0 ..< ts_node_child_count(raw)).compactMap { index in
-            guard let field = ts_node_field_name_for_child(raw, index),
-                  String(cString: field) == name else { return nil }
-            return SyntaxNode(raw: ts_node_child(raw, index))
-        }
     }
 }
 
