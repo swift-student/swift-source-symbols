@@ -4,6 +4,9 @@ These are original, intentionally small Swift sources authored for issue #6, not
 copied from third-party applications. `representative.swift` models an in-memory
 navigation index to exercise realistic nested/generic declarations and closures.
 `block-comment.swift` preserves the exact source reproducer recorded in issue #6.
+`tuple-bindings.swift` covers labeled and nested tuple patterns, wildcard initializer
+scopes, and parenthesized single bindings. `incomplete-trivia.swift` retains trailing
+comments after a missing brace; its range regression also runs with CRLF line endings.
 
 JSON files specify expected declarations independently of the extractor: logical
 name, kind, lexical scope names, and zero-based half-open UTF-8 identifier and full
@@ -14,7 +17,7 @@ Additional expectations, including callable metadata and recovery, live in
 TreeSitterSwiftExtractorTests.swift. Unsupported syntax is listed in
 [the backend decision](../../../../docs/SWIFT_BACKEND.md).
 
-All `.swift` fixtures except `incomplete.swift` were accepted by Swift 6.4's frontend
+All `.swift` fixtures except `incomplete*.swift` were accepted by Swift 6.4's frontend
 parser on 2026-09-13. This is syntactic validity, not successful typechecking: some
 fixtures intentionally reference undeclared types or duplicate overloads/branches.
 Tree-sitter still reports known false-positive diagnostics for `block-comment.swift`

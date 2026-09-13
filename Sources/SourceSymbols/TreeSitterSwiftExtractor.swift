@@ -75,6 +75,21 @@ private struct SyntaxNode {
         children.filter { !$0.isTrivia && !$0.isMissing && $0.end > $0.start }
     }
 
+    func syntaxBoundary(fromEnd: Bool) -> Int? {
+        var stack = [self]
+        while let node = stack.popLast() {
+            guard !node.isTrivia, !node.isMissing, node.end > node.start else { continue }
+            // Keep healthy spans intact, including tokens hidden by the public node API.
+            // Recovered subtrees can extend through trivia to a missing token at EOF.
+            let children = node.children
+            if !node.hasError || children.isEmpty {
+                return fromEnd ? node.end : node.start
+            }
+            stack.append(contentsOf: fromEnd ? children : children.reversed())
+        }
+        return nil
+    }
+
     func field(_ name: String) -> SyntaxNode? {
         let child = name.withCString { ts_node_child_by_field_name(raw, $0, UInt32(name.utf8.count)) }
         return ts_node_is_null(child) ? nil : SyntaxNode(raw: child)
@@ -152,12 +167,14 @@ private struct SwiftSyntaxExtraction {
                 if node.kind == "property_declaration" || node.kind == "protocol_property_declaration",
                    child.kind == "pattern"
                 {
-                    let bindings = found.filter {
-                        child.offsets.contains($0.identifierRange.utf8Offsets.lowerBound)
-                    }
                     // Each comma-separated initializer belongs to its own binding. A tuple
                     // binding has no single name with which to qualify its shared initializer.
-                    bindingScope = bindings.count == 1 ? [bindings[0].name] : []
+                    bindingScope = []
+                    if let nameNode = singleBindingName(child),
+                       let binding = found.first(where: { $0.identifierRange.utf8Offsets == nameNode.offsets })
+                    {
+                        bindingScope = [binding.name]
+                    }
                 }
                 children.append(Work(node: child, scopes: scopes + bindingScope, context: context))
             }
@@ -203,8 +220,9 @@ private struct SwiftSyntaxExtraction {
         default: return []
         }
         let children = node.syntaxChildren
-        guard let first = children.first, let last = children.last,
-              let fullRange = snapshot.range(first.start ..< last.end) else { return [] }
+        guard let start = children.lazy.compactMap({ $0.syntaxBoundary(fromEnd: false) }).first,
+              let end = children.reversed().lazy.compactMap({ $0.syntaxBoundary(fromEnd: true) }).first,
+              let fullRange = snapshot.range(start ..< end) else { return [] }
         return try names.compactMap { nameNode in
             guard !nameNode.isMissing, !nameNode.hasError, nameNode.end > nameNode.start,
                   let identifierRange = snapshot.range(nameNode.offsets) else { return nil }
@@ -217,19 +235,26 @@ private struct SwiftSyntaxExtraction {
     }
 
     private func bindingNames(_ pattern: SyntaxNode) -> [SyntaxNode] {
-        // Stay inside binding patterns: never collect identifiers from types or initializers.
+        if let name = singleBindingName(pattern) {
+            return [name]
+        }
+        // Tuple labels are direct identifiers; only nested patterns introduce bindings.
+        return pattern.children.filter { $0.kind == "pattern" }.flatMap(bindingNames)
+    }
+
+    private func singleBindingName(_ pattern: SyntaxNode) -> SyntaxNode? {
         if let bound = pattern.field("bound_identifier") {
-            return [bound]
+            return bound
         }
-        return pattern.children.flatMap { child -> [SyntaxNode] in
-            if child.kind == "pattern" {
-                return bindingNames(child)
-            }
-            if child.kind == "simple_identifier" {
-                return [child]
-            }
-            return []
+        let children = pattern.syntaxChildren
+        if children.count == 1, children[0].kind == "simple_identifier" {
+            return children[0]
         }
+        // Parenthesizing one binding does not turn it into a tuple pattern.
+        if children.count == 3, children[0].kind == "(", children[1].kind == "pattern", children[2].kind == ")" {
+            return singleBindingName(children[1])
+        }
+        return nil
     }
 
     private func callableSignature(_ node: SyntaxNode) -> CallableSignature? {

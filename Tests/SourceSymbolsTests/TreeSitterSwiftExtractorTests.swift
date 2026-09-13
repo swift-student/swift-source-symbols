@@ -300,3 +300,45 @@ func unicodeIdentifiersAndEscaping(name: String) throws {
     #expect(result.declarations.map(\.name) == ["Raw", "one", "two"])
     #expect(candidates(.init(name: .short("value")), in: result).isEmpty)
 }
+
+@Test func tupleLabelsAreNotDeclarations() throws {
+    let snapshot = try fixture("tuple-bindings")
+    let result = try TreeSitterSwiftExtractor().extract(from: snapshot)
+    #expect(result.diagnostics.isEmpty)
+    let globals = result.declarations.filter { $0.enclosingScopes.isEmpty && $0.kind == .variable }
+    #expect(globals.map(\.name) == ["a", "b", "repeat", "c"])
+    #expect(globals.map { snapshot.text(in: $0.identifierRange) } == ["a", "b", "`repeat`", "c"])
+    #expect(globals.prefix(2).allSatisfy {
+        snapshot.text(in: $0.declarationRange) == "let (x: a, y: b) = (x: 1, y: 2)"
+    })
+    for label in ["x", "y", "outer", "inner", "ignored", "tail", "label"] {
+        #expect(candidates(.init(name: .short(label)), in: result).isEmpty)
+    }
+}
+
+@Test func tupleInitializerScopesDependOnPatternStructure() throws {
+    let result = try TreeSitterSwiftExtractor().extract(from: fixture("tuple-bindings"))
+    #expect(result.diagnostics.isEmpty)
+    #expect(result.declarations.filter { !$0.enclosingScopes.isEmpty }.map(\.qualifiedName) == [
+        "bindings.only", "bindings.temporary", "bindings.nested", "bindings.nestedTemporary",
+        "bindings.labeled", "bindings.labeledTemporary", "bindings.single", "bindings.single.singleTemporary",
+        "bindings.first", "bindings.second", "bindings.second.secondTemporary",
+    ])
+}
+
+@Test(arguments: ["\n", "\r\n"])
+func recoveredDeclarationRangesExcludeTrailingTrivia(newline: String) throws {
+    let source = try fixture("incomplete-trivia").text.replacingOccurrences(of: "\n", with: newline)
+    let snapshot = SourceSnapshot(text: source, language: .swift)
+    let result = try TreeSitterSwiftExtractor().extract(from: snapshot)
+    #expect(result.declarations.map(\.qualifiedName) == ["Open", "Open.value"])
+    let valueText = "let value = 1"
+    let outerText = "struct Open {" + newline + "    " + valueText
+    #expect(result.declarations.map { snapshot.text(in: $0.declarationRange) } == [outerText, valueText])
+    #expect(result.declarations.allSatisfy { $0.declarationRange.utf8Offsets.upperBound == outerText.utf8.count })
+    #expect(!result.diagnostics.isEmpty)
+    #expect(result.diagnostics.allSatisfy { $0.message == "Tree-sitter: missing }" })
+    #expect(result.diagnostics.allSatisfy {
+        $0.range?.utf8Offsets == snapshot.text.utf8.count ..< snapshot.text.utf8.count
+    })
+}
