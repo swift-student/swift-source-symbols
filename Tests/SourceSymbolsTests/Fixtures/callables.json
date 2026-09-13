@@ -1,0 +1,236 @@
+{
+  "declarations": [
+    {
+      "name": "convert",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        5,
+        12
+      ],
+      "declarationRange": [
+        0,
+        160
+      ]
+    },
+    {
+      "name": "gather",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        166,
+        172
+      ],
+      "declarationRange": [
+        161,
+        191
+      ]
+    },
+    {
+      "name": "choose",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        197,
+        203
+      ],
+      "declarationRange": [
+        192,
+        232
+      ]
+    },
+    {
+      "name": "choose",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        238,
+        244
+      ],
+      "declarationRange": [
+        233,
+        273
+      ]
+    },
+    {
+      "name": "identity",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        279,
+        287
+      ],
+      "declarationRange": [
+        274,
+        334
+      ]
+    },
+    {
+      "name": "identity",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        340,
+        348
+      ],
+      "declarationRange": [
+        335,
+        394
+      ]
+    },
+    {
+      "name": "typed",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        400,
+        405
+      ],
+      "declarationRange": [
+        395,
+        450
+      ]
+    },
+    {
+      "name": "call",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        456,
+        460
+      ],
+      "declarationRange": [
+        451,
+        511
+      ]
+    },
+    {
+      "name": "pair",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        517,
+        521
+      ],
+      "declarationRange": [
+        512,
+        582
+      ]
+    },
+    {
+      "name": "qualified",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        588,
+        597
+      ],
+      "declarationRange": [
+        583,
+        618
+      ]
+    },
+    {
+      "name": "Number",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        626,
+        632
+      ],
+      "declarationRange": [
+        619,
+        834
+      ]
+    },
+    {
+      "name": "+",
+      "kind": "method",
+      "scopes": [
+        "Number"
+      ],
+      "identifierRange": [
+        651,
+        652
+      ],
+      "declarationRange": [
+        639,
+        697
+      ]
+    },
+    {
+      "name": "==",
+      "kind": "method",
+      "scopes": [
+        "Number"
+      ],
+      "identifierRange": [
+        714,
+        716
+      ],
+      "declarationRange": [
+        702,
+        760
+      ]
+    },
+    {
+      "name": "init",
+      "kind": "initializer",
+      "scopes": [
+        "Number"
+      ],
+      "identifierRange": [
+        765,
+        769
+      ],
+      "declarationRange": [
+        765,
+        785
+      ]
+    },
+    {
+      "name": "subscript",
+      "kind": "subscriptDeclaration",
+      "scopes": [
+        "Number"
+      ],
+      "identifierRange": [
+        790,
+        799
+      ],
+      "declarationRange": [
+        790,
+        832
+      ]
+    },
+    {
+      "name": "Lifetime",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        841,
+        849
+      ],
+      "declarationRange": [
+        835,
+        867
+      ]
+    },
+    {
+      "name": "deinit",
+      "kind": "deinitializer",
+      "scopes": [
+        "Lifetime"
+      ],
+      "identifierRange": [
+        856,
+        862
+      ],
+      "declarationRange": [
+        856,
+        865
+      ]
+    }
+  ],
+  "diagnosticRanges": []
+}

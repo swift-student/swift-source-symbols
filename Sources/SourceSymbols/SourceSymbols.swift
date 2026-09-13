@@ -31,6 +31,27 @@ public struct SourceSnapshot: Sendable {
             .prefix(range.utf8Offsets.count), as: UTF8.self)
     }
 
+    /// Converts UTF-16 offsets without accepting boundaries inside a surrogate pair.
+    public func range(utf16Offsets offsets: Range<Int>) -> SourceRange? {
+        guard offsets.lowerBound >= 0, offsets.upperBound <= text.utf16.count else { return nil }
+        let lower = text.utf16.index(text.utf16.startIndex, offsetBy: offsets.lowerBound)
+        let upper = text.utf16.index(text.utf16.startIndex, offsetBy: offsets.upperBound)
+        guard let lowerUTF8 = lower.samePosition(in: text.utf8),
+              let upperUTF8 = upper.samePosition(in: text.utf8) else { return nil }
+        return range(text.utf8.distance(from: text.utf8.startIndex, to: lowerUTF8)
+            ..< text.utf8.distance(from: text.utf8.startIndex, to: upperUTF8))
+    }
+
+    public func utf16Offsets(for range: SourceRange) -> Range<Int>? {
+        guard range.snapshotID == id else { return nil }
+        let lower = text.utf8.index(text.utf8.startIndex, offsetBy: range.utf8Offsets.lowerBound)
+        let upper = text.utf8.index(text.utf8.startIndex, offsetBy: range.utf8Offsets.upperBound)
+        guard let lowerUTF16 = lower.samePosition(in: text.utf16),
+              let upperUTF16 = upper.samePosition(in: text.utf16) else { return nil }
+        return text.utf16.distance(from: text.utf16.startIndex, to: lowerUTF16)
+            ..< text.utf16.distance(from: text.utf16.startIndex, to: upperUTF16)
+    }
+
     private func scalarBoundary(_ offset: Int) -> Bool {
         let index = text.utf8.index(text.utf8.startIndex, offsetBy: offset)
         return index.samePosition(in: text.unicodeScalars) != nil
@@ -46,22 +67,66 @@ public struct SourceRange: Hashable, Sendable {
     }
 }
 
+/// Syntactic callable information, not a type-checked identity. Strings retain interior trivia.
+public struct CallableSignature: Equatable, Sendable {
+    public struct Parameter: Equatable, Sendable {
+        /// The external label, or "_" for an unlabeled argument.
+        public let argumentLabel: String
+        /// Includes type attributes, ownership modifiers, and a variadic suffix when present.
+        public let typeSyntax: String
+
+        public init(argumentLabel: String, typeSyntax: String) {
+            self.argumentLabel = argumentLabel
+            self.typeSyntax = typeSyntax
+        }
+    }
+
+    public let parameters: [Parameter]
+    public let genericParameters: String?
+    public let effects: [String]
+    public let returnType: String?
+    public let genericConstraints: String?
+
+    public init(parameters: [Parameter], genericParameters: String? = nil, effects: [String] = [],
+                returnType: String? = nil, genericConstraints: String? = nil)
+    {
+        self.parameters = parameters
+        self.genericParameters = genericParameters
+        self.effects = effects
+        self.returnType = returnType
+        self.genericConstraints = genericConstraints
+    }
+}
+
 public struct Declaration: Sendable {
     public enum Kind: String, Sendable {
-        case type, function, method, property, variable, initializer, extensionScope, other
+        case type, function, method, property, variable, initializer, deinitializer, subscriptDeclaration
+        case extensionScope, typeAlias, associatedType, enumCase, other
     }
 
     public let name: String
     public let qualifiedName: String
     public let kind: Kind
-    /// Backend-provided signature; matched exactly without heuristic normalization.
-    public let signature: String?
+    /// Nil for non-callables or a callable whose header could not be recovered reliably.
+    public let signature: CallableSignature?
+    public var callableName: String? {
+        callableSuffix.map { name + $0 }
+    }
+
+    public var qualifiedCallableName: String? {
+        callableSuffix.map { qualifiedName + $0 }
+    }
+
+    private var callableSuffix: String? {
+        signature.map { "(" + $0.parameters.map { $0.argumentLabel + ":" }.joined() + ")" }
+    }
+
     /// Outer-to-inner lexical scope names, including extension scopes.
     public let enclosingScopes: [String]
     public let identifierRange: SourceRange
     public let declarationRange: SourceRange
 
-    public init(name: String, qualifiedName: String, kind: Kind, signature: String? = nil,
+    public init(name: String, qualifiedName: String, kind: Kind, signature: CallableSignature? = nil,
                 enclosingScopes: [String] = [], identifierRange: SourceRange,
                 declarationRange: SourceRange) throws
     {
@@ -121,9 +186,11 @@ public protocol DeclarationExtractor: Sendable {
 public struct DeclarationQuery: Sendable {
     public enum Name: Sendable { case short(String), qualified(String) }
     public let name: Name
-    public let signature: String?
-    public init(name: Name, signature: String? = nil) {
+    public let parameterTypes: [String]?
+    public let signature: CallableSignature?
+    public init(name: Name, parameterTypes: [String]? = nil, signature: CallableSignature? = nil) {
         self.name = name
+        self.parameterTypes = parameterTypes
         self.signature = signature
     }
 }
@@ -139,10 +206,14 @@ public enum DeclarationMatcher {
     public static func match(_ query: DeclarationQuery, in declarations: [Declaration]) -> DeclarationMatch {
         let candidates = declarations.filter { declaration in
             let nameMatches: Bool = switch query.name {
-            case let .short(name): declaration.name == name
-            case let .qualified(name): declaration.qualifiedName == name
+            case let .short(name): declaration.name == name || declaration.callableName == name
+            case let .qualified(name): declaration.qualifiedName == name || declaration.qualifiedCallableName == name
             }
-            return nameMatches && (query.signature == nil || query.signature == declaration.signature)
+            guard nameMatches else { return false }
+            let parameterTypes = declaration.signature?.parameters.map(\.typeSyntax)
+            let typesMatch = query.parameterTypes == nil || query.parameterTypes == parameterTypes
+            let signatureMatches = query.signature == nil || query.signature == declaration.signature
+            return typesMatch && signatureMatches
         }
         switch candidates.count {
         case 0: return .missing

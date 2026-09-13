@@ -7,7 +7,8 @@ macOS; Swift 6.0 compiler compatibility and iOS/Linux support are not yet verifi
 Install SwiftLint **0.65.1** and SwiftFormat **0.62.1** from their upstream tagged
 releases, and place their executables on PATH. `make tools` verifies exact versions;
 CI installs these same releases with verified SHA-256 checksums. Tool installation is maintainer setup and
-is not required by library consumers. The package currently has no dependencies.
+is not required by library consumers. The Tree-sitter runtime dependency is pinned in Package.swift; the Swift grammar
+is vendored with [provenance](Vendor/tree-sitter-swift/PROVENANCE.md).
 
 - `make build`: compile the library and example.
 - `make test`: run Swift Testing contract tests.
@@ -19,7 +20,7 @@ is not required by library consumers. The package currently has no dependencies.
 
 Commit the root Package.resolved when dependencies are introduced, to reproduce
 maintainer and CI builds. Library consumers resolve their own dependency graph;
-the root lockfile does not pin their builds. No lockfile exists until needed.
+the root lockfile does not pin their builds. The current runtime resolution is committed.
 
 Keep downloaded tools in ignored `.tools/`, scratch artifacts in `.cache/`, and
 build output in `.build/`. Never commit credentials, downloaded toolchains, editor

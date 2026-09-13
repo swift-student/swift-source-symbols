@@ -1,0 +1,91 @@
+{
+  "declarations": [
+    {
+      "name": "Café",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        7,
+        12
+      ],
+      "declarationRange": [
+        0,
+        96
+      ]
+    },
+    {
+      "name": "😀",
+      "kind": "property",
+      "scopes": [
+        "Café"
+      ],
+      "identifierRange": [
+        23,
+        27
+      ],
+      "declarationRange": [
+        19,
+        34
+      ]
+    },
+    {
+      "name": "repeat",
+      "kind": "method",
+      "scopes": [
+        "Café"
+      ],
+      "identifierRange": [
+        44,
+        52
+      ],
+      "declarationRange": [
+        39,
+        76
+      ]
+    },
+    {
+      "name": "é",
+      "kind": "method",
+      "scopes": [
+        "Café"
+      ],
+      "identifierRange": [
+        86,
+        89
+      ],
+      "declarationRange": [
+        81,
+        94
+      ]
+    },
+    {
+      "name": "Café",
+      "kind": "extensionScope",
+      "scopes": [],
+      "identifierRange": [
+        107,
+        112
+      ],
+      "declarationRange": [
+        97,
+        135
+      ]
+    },
+    {
+      "name": "résumé",
+      "kind": "method",
+      "scopes": [
+        "Café"
+      ],
+      "identifierRange": [
+        120,
+        128
+      ],
+      "declarationRange": [
+        115,
+        133
+      ]
+    }
+  ],
+  "diagnosticRanges": []
+}

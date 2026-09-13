@@ -1,0 +1,124 @@
+{
+  "declarations": [
+    {
+      "name": "Choice",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        21,
+        27
+      ],
+      "declarationRange": [
+        14,
+        43
+      ]
+    },
+    {
+      "name": "a",
+      "kind": "method",
+      "scopes": [
+        "Choice"
+      ],
+      "identifierRange": [
+        35,
+        36
+      ],
+      "declarationRange": [
+        30,
+        41
+      ]
+    },
+    {
+      "name": "Choice",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        57,
+        63
+      ],
+      "declarationRange": [
+        50,
+        79
+      ]
+    },
+    {
+      "name": "b",
+      "kind": "method",
+      "scopes": [
+        "Choice"
+      ],
+      "identifierRange": [
+        71,
+        72
+      ],
+      "declarationRange": [
+        66,
+        77
+      ]
+    },
+    {
+      "name": "Container",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        94,
+        103
+      ],
+      "declarationRange": [
+        87,
+        231
+      ]
+    },
+    {
+      "name": "selected",
+      "kind": "method",
+      "scopes": [
+        "Container"
+      ],
+      "identifierRange": [
+        129,
+        137
+      ],
+      "declarationRange": [
+        124,
+        142
+      ]
+    },
+    {
+      "name": "selected",
+      "kind": "method",
+      "scopes": [
+        "Container"
+      ],
+      "identifierRange": [
+        170,
+        178
+      ],
+      "declarationRange": [
+        165,
+        193
+      ]
+    },
+    {
+      "name": "fallback",
+      "kind": "method",
+      "scopes": [
+        "Container"
+      ],
+      "identifierRange": [
+        209,
+        217
+      ],
+      "declarationRange": [
+        204,
+        222
+      ]
+    }
+  ],
+  "diagnosticRanges": [
+    [
+      106,
+      106
+    ]
+  ]
+}
