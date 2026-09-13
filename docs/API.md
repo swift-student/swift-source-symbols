@@ -1,7 +1,9 @@
 # Initial API decision
 
 SourceSymbols operates on immutable in-memory SourceSnapshot values with an
-explicit SourceLanguage. Each newly initialized snapshot has a unique identity;
+explicit SourceLanguage enum, currently containing only Swift. Arbitrary language
+identifiers cannot be constructed; an enum case does not guarantee that a backend
+is available. Each newly initialized snapshot has a unique identity;
 copies retain that identity. SourceRange values can only be constructed by their
 snapshot, and contain zero-based UTF-8 byte offsets with an exclusive upper bound.
 Empty ranges, including EOF, are valid. Offsets must fall on Unicode scalar
@@ -36,5 +38,5 @@ selected: issue #6 must evaluate SwiftParser/SwiftSyntax and Tree-sitter before
 issue #5 finalizes packaging. UI, URLs, editor launching, file loading, Git snapshots,
 and anchor relocation belong in consumer adapters.
 
-The API may change before 1.0. No release or license grant is
-made by this scaffold. The repository stays private pending an owner decision.
+Backward compatibility is not required until the first proper release. Breaking
+API changes may be made freely to improve the design during this period.

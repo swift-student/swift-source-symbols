@@ -10,6 +10,6 @@ Run `make check` before proposing changes. `make format` edits handwritten Swift
 Do not normalize intentionally preserved fixture line endings. Generated parsers
 and vendored code must stay separate from handwritten code and carry provenance.
 
-Keep the repository private. Do not add a license grant, publish a release, or
-change visibility without the owner's explicit decision. No backend or platform
-support claims without validation. See docs/API.md and CONTRIBUTING.md.
+Backward compatibility is not required until the first proper release. Make
+breaking API changes when they improve the design. No backend or platform support
+claims without validation. See docs/API.md and CONTRIBUTING.md.

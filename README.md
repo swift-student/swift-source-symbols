@@ -2,7 +2,7 @@
 
 A Swift library for extracting and matching source declarations across languages.
 
-Status: initial SwiftPM API scaffold with contract tests and a runnable fixture example. No bundled production parser or released package yet. This repository remains private; licensing is undecided.
+Status: initial SwiftPM API scaffold with contract tests and a runnable fixture example. No bundled production parser or released package yet.
 
 The intended API accepts source text and returns declaration names, signatures, enclosing scopes, and precise source ranges. Extraction and matching remain independent of UI, URLs, editor launching, and Git review snapshots. Initial language candidates are Swift, TypeScript/TSX, Ruby, and Kotlin.
 
@@ -16,7 +16,7 @@ A local comparison favored direct SwiftTreeSitter over wrapping Tree-sitter Tags
 4. [GitHub Actions CI](../../issues/4)
 5. [Parser and query packaging](../../issues/5)
 6. [Fixtures and Swift backend evaluation](../../issues/6)
-7. [Documentation and licensing](../../issues/7)
+7. [Documentation and support](../../issues/7)
 8. [Repository protection and releases](../../issues/8)
 
 Start with #1–#3, then CI. Parser packaging and backend evaluation inform the implementation and support policy. Configure required checks after CI is passing.

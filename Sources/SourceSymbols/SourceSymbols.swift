@@ -1,13 +1,8 @@
 import Foundation
 
-/// An explicit language identifier; availability is determined by the extractor.
-public struct SourceLanguage: RawRepresentable, Hashable, Sendable {
-    public let rawValue: String
-    public init(rawValue: String) {
-        self.rawValue = rawValue
-    }
-
-    public static let swift = Self(rawValue: "swift")
+/// Languages recognized by the API; extraction availability depends on the backend.
+public enum SourceLanguage: String, Hashable, Sendable {
+    case swift
 }
 
 /// Immutable source text. Ranges are meaningful only within this snapshot.

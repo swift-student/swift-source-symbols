@@ -1,6 +1,6 @@
 # Contributing
 
-This private, pre-release library uses Swift 6 language mode, Swift Testing, and
+This library uses Swift 6 language mode, Swift Testing, and
 macOS 13 as its deployment minimum. Current local validation uses Swift 6.4 on
 macOS; Swift 6.0 compiler compatibility and iOS/Linux support are not yet verified.
 
@@ -27,5 +27,5 @@ state, or machine-specific paths. Intentional test fixtures under Fixtures retai
 exact bytes, including CRLF. Check `git status --short` after validation.
 
 Changes should explain behavior, validation, and limitations. Preserve API
-boundaries described in docs/API.md. Licensing is undecided: do not add a license
-grant or redistribute dependencies until their notices and provenance are audited.
+boundaries described in docs/API.md. Backward compatibility is not required until
+the first proper release; breaking API changes are welcome when they improve the design.
