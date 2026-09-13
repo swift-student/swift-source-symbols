@@ -228,8 +228,14 @@ private struct SwiftSyntaxExtraction {
                   let identifierRange = snapshot.range(nameNode.offsets) else { return nil }
             let name = kind == .extensionScope ? extensionName(nameNode) : unescape(text(nameNode))
             guard !name.isEmpty else { return nil }
-            return try Declaration(name: name, qualifiedName: (scopes + [name]).joined(separator: "."),
-                                   kind: kind, signature: signature, enclosingScopes: scopes,
+            let qualifiedName = (scopes + [name]).joined(separator: ".")
+            let suffix = signature.map {
+                "(" + $0.parameters.map { ($0.argumentLabel ?? "_") + ":" }.joined() + ")"
+            }
+            return try Declaration(name: name, qualifiedName: qualifiedName,
+                                   kind: kind, signature: signature,
+                                   callableName: suffix.map { name + $0 },
+                                   qualifiedCallableName: suffix.map { qualifiedName + $0 }, enclosingScopes: scopes,
                                    identifierRange: identifierRange, declarationRange: fullRange)
         }
     }
@@ -265,9 +271,9 @@ private struct SwiftSyntaxExtraction {
         }
         // A damaged parameter list must not be represented as a clean zero-argument signature.
         guard header.contains(where: { $0.kind == "(" }), header.contains(where: { $0.kind == ")" }) else { return nil }
-        let parameterNodes = header.filter { $0.kind == "parameter" }
         var parameters: [CallableSignature.Parameter] = []
-        for parameter in parameterNodes {
+        for index in header.indices where header[index].kind == "parameter" {
+            let parameter = header[index]
             let children = parameter.syntaxChildren
             guard let colon = children.firstIndex(where: { $0.kind == ":" }),
                   let localName = children[..<colon].last(where: { $0.kind == "simple_identifier" }),
@@ -278,9 +284,16 @@ private struct SwiftSyntaxExtraction {
             let isOperator = (node.kind == "function_declaration" || node.kind == "protocol_function_declaration")
                 && node.field("name")?.kind != "simple_identifier"
             let defaultsToUnlabeled = isOperator || node.kind == "subscript_declaration"
-            let label = externalName.map { unescape(text($0)) }
-                ?? (defaultsToUnlabeled ? "_" : unescape(text(localName)))
-            parameters.append(.init(argumentLabel: label, typeSyntax: text(typeStart.start ..< typeEnd.end)))
+            let labelNode = externalName ?? (defaultsToUnlabeled ? nil : localName)
+            let label = labelNode.flatMap { text($0) == "_" ? nil : unescape(text($0)) }
+            let name = text(localName) == "_" ? nil : unescape(text(localName))
+            // Default expressions are siblings of the parameter, not part of its type node.
+            let next = header.suffix(from: header.index(after: index)).first { !$0.isTrivia }
+            let isVariadic = children.contains { $0.kind == "..." || $0.kind == "type_pack_expansion" }
+            parameters.append(.init(name: name, argumentLabel: label,
+                                    typeSyntax: text(typeStart.start ..< typeEnd.end),
+                                    passing: isVariadic ? .variadicPositional : .positional,
+                                    hasDefaultValue: next?.kind == "="))
         }
         var returnType: String?
         if let arrow = header.firstIndex(where: { $0.kind == "->" }) {

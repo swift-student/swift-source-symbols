@@ -3,6 +3,10 @@
 SourceSymbols operates on immutable in-memory `SourceSnapshot` values with an
 explicit `SourceLanguage` enum, currently containing only Swift. Each newly
 initialized snapshot has a unique identity; copies retain that identity.
+The package has one public product and consumer import, `SourceSymbols`, bundling
+the available backends. Shared models and matching live in the parser-independent
+`SourceSymbolsCore` target; language adapters live in `SourceSymbols`. See
+[the architecture](ARCHITECTURE.md) for the boundary and the next-language checklist.
 `SourceRange` values can only be constructed by their snapshot and contain
 zero-based UTF-8 byte offsets with an exclusive upper bound. Empty ranges,
 including EOF, are valid. Offsets must fall on Unicode scalar boundaries; they
@@ -25,7 +29,11 @@ The input length is checked against Tree-sitter's 32-bit byte limit before parsi
 
 A `Declaration` contains a short name, qualified name, kind, optional structured
 callable signature, outer-to-inner named lexical scopes, identifier range, and
-full declaration range. Identifier ranges retain spelling, including backticks;
+full declaration range. Backends supply short, qualified, and optional callable
+lookup spellings. The core compares those strings exactly; it does not choose
+qualification separators or synthesize callable names from parameter metadata.
+The following extraction and qualification conventions describe the Swift adapter.
+Identifier ranges retain spelling, including backticks;
 lookup names remove identifier backticks. Extension names concatenate the extended
 type's syntax tokens, removing intervening trivia and identifier escaping, so
 `extension Host . Inner` qualifies members under `Host.Inner`. Extensions have
@@ -51,29 +59,48 @@ parents before descendants, sibling nodes and grouped bindings in source order.
 
 ## Callable matching
 
-`CallableSignature` replaces the initial backend-defined string signature. It
-contains parameters (external argument label and exact type syntax), optional
-generic parameter and `where` clauses, effects (`async`, `throws`, `rethrows`,
-including typed throws), and optional return type. Parameter type syntax includes
-type attributes, modifiers such as `inout`, and a variadic suffix when present.
-Default values and local parameter names are not part of the signature. Syntax
-strings exclude surrounding trivia but retain interior trivia; no whitespace,
-type-alias, or semantic normalization is performed. For example, `Int` and
-`Swift.Int` remain distinct. This metadata is not an exhaustive callable identity:
-static/instance modifiers, declaration attributes, and initializer failability are
-not signature filters. Such declarations remain separate and may remain ambiguous.
+`CallableSignature` is syntactic metadata rather than a semantic callable identity.
+Its ordered parameters contain a local binding `name`, an external `argumentLabel`,
+optional `typeSyntax`, a `passing` style, and `hasDefaultValue`. Names and labels are
+independent: Swift's `value local: Int` has name `local` and label `value`, while
+`_ local: Int` has name `local` and a nil label. A nil name means there is no single
+named binding, for example Swift's `ignored _: Int`. A nil type means no annotation
+is present, not an inferred type or a wildcard. Backends with damaged headers
+should omit the entire signature instead of representing damaged types as absent.
+
+Passing styles are positional, keyword, variadic positional, variadic keyword, and
+block. Positional parameters may have labels; Swift's ordered labeled arguments
+remain positional. These model cases do not imply that a corresponding language
+backend is implemented. Default expressions are excluded, but their presence is
+recorded. Exact signature equality includes all parameter fields, including local
+names, passing styles, and default presence. Use a callable-name or parameter-type
+query when those extra distinctions are irrelevant.
+
+Optional generic parameter syntax, generic constraints, effects, and return type
+remain backend-defined syntax. The Swift adapter retains `async`, `throws`,
+`rethrows`, typed throws, generic parameter and `where` clauses. Swift parameter
+types include attributes, ownership modifiers, and a variadic suffix when present.
+Syntax strings exclude surrounding trivia but retain interior trivia. There is no
+whitespace, type-alias, or semantic normalization; `Int` and `Swift.Int` remain
+distinct. Static/instance modifiers, declaration attributes, and initializer
+failability are not represented, so some declarations may still remain ambiguous.
 
 `name`/`qualifiedName` omit parameter lists. `callableName` and
-`qualifiedCallableName` add external labels, for example `run(value:)` and
-`Store.run(value:)`. `_` denotes an unlabeled argument. Operator parameters and
-subscript parameters without an explicit external label use `_`. Non-callables
-and callables with an unreliably recovered header have no callable name/signature.
+`qualifiedCallableName` are supplied by the backend. The Swift adapter adds external
+labels, for example `run(value:)` and `Store.run(value:)`, rendering a nil label as
+`_`. Operator and subscript parameters without an explicit external label have nil
+labels. Swift non-callables and callables with an unreliably recovered header have
+no callable name/signature. The core permits a signature without callable aliases;
+providing metadata alone never invents a new lookup spelling.
 A body error alone does not discard a sound header's signature.
 
 `DeclarationQuery` matches short or qualified names, accepting either the base
-name or the callable name. Optional `parameterTypes` narrows by the complete,
-ordered type-syntax list. Optional `signature` compares the structured metadata
-exactly. Supplied filters are combined. Matching is case-sensitive and returns
+name or the callable name. Optional `parameterTypes: [String?]?` narrows by the
+complete, ordered annotation list. A nil list omits the filter; `[nil]` requires
+exactly one parameter with no annotation; `[]` requires a known zero-parameter
+signature. A nil signature never satisfies an annotation filter. Optional
+`signature` compares all structured metadata exactly. Supplied filters are combined.
+Matching is case-sensitive and returns
 `missing`, `unique`, or every `ambiguous` candidate in input order. No fuzzy
 matching, deduplication, or arbitrary overload selection occurs.
 

@@ -8,28 +8,6 @@ private func fixture(_ name: String) throws -> SourceSnapshot {
     return try SourceSnapshot(text: #require(String(data: data, encoding: .utf8)), language: .swift)
 }
 
-private struct ExpectedDeclaration: Decodable, Equatable {
-    let name: String
-    let kind: String
-    let scopes: [String]
-    let identifierRange: [Int]
-    let declarationRange: [Int]
-
-    init(_ declaration: Declaration) {
-        name = declaration.name
-        kind = declaration.kind.rawValue
-        scopes = declaration.enclosingScopes
-        identifierRange = [
-            declaration.identifierRange.utf8Offsets.lowerBound,
-            declaration.identifierRange.utf8Offsets.upperBound,
-        ]
-        declarationRange = [
-            declaration.declarationRange.utf8Offsets.lowerBound,
-            declaration.declarationRange.utf8Offsets.upperBound,
-        ]
-    }
-}
-
 private struct ExpectedFixture: Decodable {
     let declarations: [ExpectedDeclaration]
     let diagnosticRanges: [[Int]]
@@ -41,18 +19,10 @@ func declarationCorpus(name: String) throws {
     let url = try #require(Bundle.module.url(forResource: name, withExtension: "json", subdirectory: "Fixtures"))
     let expected = try JSONDecoder().decode(ExpectedFixture.self, from: Data(contentsOf: url))
     let result = try TreeSitterSwiftExtractor().extract(from: snapshot)
-    #expect(result.diagnostics.compactMap { diagnostic in
-        diagnostic.range.map { [$0.utf8Offsets.lowerBound, $0.utf8Offsets.upperBound] }
-    } == expected.diagnosticRanges)
-    #expect(result.diagnostics.count == expected.diagnosticRanges.count)
-    #expect(result.diagnostics.allSatisfy { $0.severity == .error })
-    #expect(result.declarations.map(ExpectedDeclaration.init) == expected.declarations)
+    try expectBackendContract(result, from: snapshot, declarations: expected.declarations,
+                              diagnosticRanges: expected.diagnosticRanges.map { $0[0] ..< $0[1] })
     for declaration in result.declarations {
         #expect(declaration.qualifiedName == (declaration.enclosingScopes + [declaration.name]).joined(separator: "."))
-        #expect(snapshot.text(in: declaration.identifierRange) != nil)
-        #expect(snapshot.text(in: declaration.declarationRange) != nil)
-        let utf16 = try #require(snapshot.utf16Offsets(for: declaration.declarationRange))
-        #expect(snapshot.range(utf16Offsets: utf16) == declaration.declarationRange)
     }
 }
 
@@ -78,11 +48,14 @@ private func candidates(_ query: DeclarationQuery, in result: ExtractionResult) 
     ])
     let scoped = candidates(.init(name: .qualified("Store.run(value:)")), in: result)
     #expect(scoped.map { $0.signature?.parameters.map(\.typeSyntax) } == [["Int"], ["String"]])
-    #expect(candidates(.init(name: .qualified("Store.run(value:)"), parameterTypes: ["String"]), in: result).count == 1)
+    expectMatches(.init(name: .qualified("Store.run(value:)")), in: result,
+                  identifierOffsets: [105 ..< 108, 133 ..< 136])
+    expectMatches(.init(name: .qualified("Store.run(value:)"), parameterTypes: ["String"]), in: result,
+                  identifierOffsets: [133 ..< 136])
     #expect(candidates(.init(name: .qualified("Store.run(other:)")), in: result).count == 1)
     #expect(candidates(.init(name: .short("run()")), in: result).count == 1)
     #expect(candidates(.init(name: .short("Run")), in: result).isEmpty)
-    #expect(candidates(.init(name: .short("missing")), in: result).isEmpty)
+    expectMatches(.init(name: .short("missing")), in: result, identifierOffsets: [])
     #expect(candidates(.init(name: .short("run(value:)"), parameterTypes: ["Bool"]), in: result).isEmpty)
 }
 
@@ -90,8 +63,8 @@ private func candidates(_ query: DeclarationQuery, in result: ExtractionResult) 
     let result = try TreeSitterSwiftExtractor().extract(from: fixture("callables"))
     let convert = try #require(candidates(.init(name: .short("convert(_:into:)")), in: result).first)
     #expect(convert.signature == CallableSignature(
-        parameters: [.init(argumentLabel: "_", typeSyntax: "@escaping (T, Int) throws -> U"),
-                     .init(argumentLabel: "into", typeSyntax: "inout [U]")],
+        parameters: [.init(name: "transform", typeSyntax: "@escaping (T, Int) throws -> U", hasDefaultValue: true),
+                     .init(name: "values", argumentLabel: "into", typeSyntax: "inout [U]")],
         genericParameters: "<T, U>", effects: ["async", "throws"], returnType: "[U]",
         genericConstraints: "where U: Equatable"
     ))
@@ -116,7 +89,7 @@ private func candidates(_ query: DeclarationQuery, in result: ExtractionResult) 
     let result = try TreeSitterSwiftExtractor().extract(from: fixture("callables"))
     #expect(candidates(.init(name: .short("choose(value:)"), parameterTypes: ["Int"]), in: result).count == 2)
     let signature = CallableSignature(
-        parameters: [.init(argumentLabel: "value", typeSyntax: "Int")],
+        parameters: [.init(name: "value", argumentLabel: "value", typeSyntax: "Int")],
         returnType: "String"
     )
     #expect(candidates(.init(name: .short("choose(value:)"), signature: signature), in: result).count == 1)
@@ -233,8 +206,8 @@ func unicodeIdentifiersAndEscaping(name: String) throws {
                 let name = "Type\(index)"
                 let snapshot = SourceSnapshot(text: "struct \(name) {}", language: .swift)
                 let result = try extractor.extract(from: snapshot)
+                try expectSnapshotContract(result, from: snapshot)
                 #expect(result.declarations.map(\.name) == [name])
-                #expect(result.declarations.first?.identifierRange.snapshotID == snapshot.id)
             }
         }
         try await group.waitForAll()
@@ -282,7 +255,7 @@ func unicodeIdentifiersAndEscaping(name: String) throws {
     let result = try TreeSitterSwiftExtractor().extract(from: fixture("incomplete"))
     #expect(!result.diagnostics.isEmpty)
     let recovered = try #require(candidates(.init(name: .short("recovered(value:)")), in: result).first)
-    #expect(recovered.signature?.parameters == [.init(argumentLabel: "value", typeSyntax: "Int")])
+    #expect(recovered.signature?.parameters == [.init(name: "value", argumentLabel: "value", typeSyntax: "Int")])
 }
 
 @Test func wildcardPatternsDifferFromEscapedUnderscoreNames() throws {
@@ -341,4 +314,34 @@ func recoveredDeclarationRangesExcludeTrailingTrivia(newline: String) throws {
     #expect(result.diagnostics.allSatisfy {
         $0.range?.utf8Offsets == snapshot.text.utf8.count ..< snapshot.text.utf8.count
     })
+}
+
+@Test func swiftParameterMetadataSeparatesBindingsLabelsAndDefaults() throws {
+    let result = try TreeSitterSwiftExtractor().extract(from: fixture("parameter-metadata"))
+    #expect(result.diagnostics.isEmpty)
+    let labels = try #require(candidates(.init(name: .short("labels(value:_:discarded:)")), in: result).first)
+    #expect(labels.signature?.parameters == [
+        .init(name: "local", argumentLabel: "value", typeSyntax: "Int"),
+        .init(name: "hidden", typeSyntax: "String"),
+        .init(argumentLabel: "discarded", typeSyntax: "Bool"),
+    ])
+    let defaults = try #require(candidates(.init(name: .short("defaults(value:done:)")), in: result).first)
+    #expect(defaults.signature?.parameters == [
+        .init(name: "value", argumentLabel: "value", typeSyntax: "Int", hasDefaultValue: true),
+        .init(name: "done", argumentLabel: "done", typeSyntax: "() -> Void", hasDefaultValue: true),
+    ])
+    let escaped = try #require(candidates(.init(name: .short("escaped(repeat:)")), in: result).first)
+    #expect(escaped.signature?.parameters == [.init(name: "for", argumentLabel: "repeat", typeSyntax: "Int")])
+    let pack = try #require(candidates(.init(name: .short("pack(_:)")), in: result).first)
+    #expect(pack.signature?.parameters == [
+        .init(name: "values", typeSyntax: "repeat each T", passing: .variadicPositional),
+    ])
+    let callables = try TreeSitterSwiftExtractor().extract(from: fixture("callables"))
+    let variadic = try #require(candidates(.init(name: .short("gather(values:)")), in: callables).first)
+    #expect(variadic.signature?.parameters == [
+        .init(name: "values", argumentLabel: "values", typeSyntax: "Int...", passing: .variadicPositional),
+    ])
+    let operation = try #require(candidates(.init(name: .qualified("Number.+(_:_:)")), in: callables).first)
+    #expect(operation.signature?.parameters.map(\.name) == ["lhs", "rhs"])
+    #expect(operation.signature?.parameters.allSatisfy { $0.argumentLabel == nil } == true)
 }

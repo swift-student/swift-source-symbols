@@ -7,6 +7,10 @@ navigation index to exercise realistic nested/generic declarations and closures.
 `tuple-bindings.swift` covers labeled and nested tuple patterns, wildcard initializer
 scopes, and parenthesized single bindings. `incomplete-trivia.swift` retains trailing
 comments after a missing brace; its range regression also runs with CRLF line endings.
+`parameter-metadata.swift` distinguishes local names from argument labels, omitted
+bindings, defaults, escaped names, and variadic parameter packs. Shared backend contract assertions live in
+`../Support/BackendContract.swift`; language-specific spelling and signature checks
+remain in the Swift tests.
 
 JSON files specify expected declarations independently of the extractor: logical
 name, kind, lexical scope names, and zero-based half-open UTF-8 identifier and full

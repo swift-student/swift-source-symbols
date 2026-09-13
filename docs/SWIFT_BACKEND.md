@@ -31,6 +31,13 @@ types, so parameter types are located after the parameter's direct colon token a
 return types after the callable's direct arrow token, including separate annotation and suffix nodes. Nested type/default-expression
 punctuation is never treated as a callable-level separator.
 
+The adapter lives in `Sources/SourceSymbols/Swift` and supplies its own qualified
+and callable lookup spellings. Parser-independent models and matching live in
+`SourceSymbolsCore`, exposed through the single `SourceSymbols` consumer module.
+Parameter metadata retains local names separately from optional argument labels,
+records default presence, and classifies Swift variadics. Ruby extraction is
+deferred to the next PR; see [the architecture](ARCHITECTURE.md).
+
 ## Corpus and observed behavior
 
 The permanent [fixtures](../Tests/SourceSymbolsTests/Fixtures) are original test

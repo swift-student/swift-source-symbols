@@ -1,4 +1,4 @@
-import SourceSymbols
+import SourceSymbolsCore
 import Testing
 
 @Test func unicodeRangesAndSnapshotIdentity() throws {
@@ -22,9 +22,12 @@ import Testing
         ("A", [CallableSignature.Parameter(argumentLabel: "value", typeSyntax: "Int")]),
         ("B", []),
     ].map { scope, parameters in
-        try Declaration(name: "run", qualifiedName: scope + ".run", kind: .method,
-                        signature: .init(parameters: parameters), enclosingScopes: [scope], identifierRange: range,
-                        declarationRange: range)
+        let callableName = parameters.isEmpty ? "run()" : "run(value:)"
+        return try Declaration(name: "run", qualifiedName: scope + ".run", kind: .method,
+                               signature: .init(parameters: parameters), callableName: callableName,
+                               qualifiedCallableName: scope + "." + callableName,
+                               enclosingScopes: [scope], identifierRange: range,
+                               declarationRange: range)
     }
     if case let .ambiguous(candidates) = DeclarationMatcher.match(.init(name: .short("run")), in: declarations) {
         #expect(candidates.count == 3)

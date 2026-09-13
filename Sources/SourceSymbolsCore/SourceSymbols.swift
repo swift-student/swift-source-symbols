@@ -70,14 +70,31 @@ public struct SourceRange: Hashable, Sendable {
 /// Syntactic callable information, not a type-checked identity. Strings retain interior trivia.
 public struct CallableSignature: Equatable, Sendable {
     public struct Parameter: Equatable, Sendable {
-        /// The external label, or "_" for an unlabeled argument.
-        public let argumentLabel: String
-        /// Includes type attributes, ownership modifiers, and a variadic suffix when present.
-        public let typeSyntax: String
+        /// How arguments are supplied. `block` is a separate language-level channel,
+        /// not every positional parameter whose type happens to be a closure.
+        public enum Passing: String, Sendable {
+            case positional, keyword, variadicPositional, variadicKeyword, block
+        }
 
-        public init(argumentLabel: String, typeSyntax: String) {
+        /// The local binding name; nil when there is no single named binding.
+        public let name: String?
+        /// An external argument label or keyword; nil when the argument is unlabeled.
+        public let argumentLabel: String?
+        /// Nil when no type annotation is present. Never inferred from a value or default.
+        public let typeSyntax: String?
+        /// Positional parameters may still have labels, as in Swift.
+        public let passing: Passing
+        /// Records the presence of a default, without including its expression.
+        public let hasDefaultValue: Bool
+
+        public init(name: String? = nil, argumentLabel: String? = nil, typeSyntax: String? = nil,
+                    passing: Passing = .positional, hasDefaultValue: Bool = false)
+        {
+            self.name = name
             self.argumentLabel = argumentLabel
             self.typeSyntax = typeSyntax
+            self.passing = passing
+            self.hasDefaultValue = hasDefaultValue
         }
     }
 
@@ -109,17 +126,9 @@ public struct Declaration: Sendable {
     public let kind: Kind
     /// Nil for non-callables or a callable whose header could not be recovered reliably.
     public let signature: CallableSignature?
-    public var callableName: String? {
-        callableSuffix.map { name + $0 }
-    }
-
-    public var qualifiedCallableName: String? {
-        callableSuffix.map { qualifiedName + $0 }
-    }
-
-    private var callableSuffix: String? {
-        signature.map { "(" + $0.parameters.map { $0.argumentLabel + ":" }.joined() + ")" }
-    }
+    /// Optional exact lookup spellings supplied by the backend, never synthesized by the core.
+    public let callableName: String?
+    public let qualifiedCallableName: String?
 
     /// Outer-to-inner lexical scope names, including extension scopes.
     public let enclosingScopes: [String]
@@ -127,6 +136,7 @@ public struct Declaration: Sendable {
     public let declarationRange: SourceRange
 
     public init(name: String, qualifiedName: String, kind: Kind, signature: CallableSignature? = nil,
+                callableName: String? = nil, qualifiedCallableName: String? = nil,
                 enclosingScopes: [String] = [], identifierRange: SourceRange,
                 declarationRange: SourceRange) throws
     {
@@ -138,6 +148,8 @@ public struct Declaration: Sendable {
         self.qualifiedName = qualifiedName
         self.kind = kind
         self.signature = signature
+        self.callableName = callableName
+        self.qualifiedCallableName = qualifiedCallableName
         self.enclosingScopes = enclosingScopes
         self.identifierRange = identifierRange
         self.declarationRange = declarationRange
@@ -186,9 +198,11 @@ public protocol DeclarationExtractor: Sendable {
 public struct DeclarationQuery: Sendable {
     public enum Name: Sendable { case short(String), qualified(String) }
     public let name: Name
-    public let parameterTypes: [String]?
+    /// An exact ordered annotation list. A nil element requires an absent annotation;
+    /// a nil list omits the filter. An empty list requires a known zero-parameter signature.
+    public let parameterTypes: [String?]?
     public let signature: CallableSignature?
-    public init(name: Name, parameterTypes: [String]? = nil, signature: CallableSignature? = nil) {
+    public init(name: Name, parameterTypes: [String?]? = nil, signature: CallableSignature? = nil) {
         self.name = name
         self.parameterTypes = parameterTypes
         self.signature = signature

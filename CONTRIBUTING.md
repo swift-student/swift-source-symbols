@@ -28,7 +28,11 @@ state, or machine-specific paths. Intentional test fixtures under Fixtures retai
 exact bytes, including CRLF. Check `git status --short` after validation.
 
 Changes should explain behavior, validation, and limitations. Preserve API
-boundaries described in docs/API.md. Backward compatibility is not required until
+boundaries described in docs/API.md and docs/ARCHITECTURE.md. Core tests import
+`SourceSymbolsCore` without a parser dependency; integration tests use the consumer
+`SourceSymbols` import. Reuse the backend contract helpers for additional languages,
+and keep syntax fixtures and language-specific assertions independently specified.
+Backward compatibility is not required until
 the first proper release; breaking API changes are welcome when they improve the design.
 
 ## Continuous integration

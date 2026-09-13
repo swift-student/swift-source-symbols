@@ -6,6 +6,8 @@ Status: initial Tree-sitter Swift extractor with a permanent declaration corpus 
 
 The API accepts source text and returns declaration names, structured callable signatures, enclosing scopes, diagnostics, and precise source ranges. Extraction and matching remain independent of UI, URLs, editor launching, and Git review snapshots. Initial language candidates are Swift, TypeScript/TSX, Ruby, and Kotlin.
 
+One `SourceSymbols` product bundles the implemented backends. Internally, a parser-independent core owns the shared model and matching; language adapters own syntax and lookup spellings. Callable metadata supports absent type annotations and separate binding names, argument labels, and passing styles. Ruby extraction is planned for the next PR and is not implemented here. See [the architecture](docs/ARCHITECTURE.md).
+
 The initial Swift backend uses direct Tree-sitter syntax-node traversal. See the [backend decision](docs/SWIFT_BACKEND.md) for tested syntax, permanent grammar regressions, dependency provenance, and the deferred SourceKitten/SwiftSyntax comparisons.
 
 ## Setup backlog
