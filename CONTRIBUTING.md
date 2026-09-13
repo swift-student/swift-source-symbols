@@ -7,7 +7,8 @@ macOS; Swift 6.0 compiler compatibility and iOS/Linux support are not yet verifi
 Install SwiftLint **0.65.1** and SwiftFormat **0.62.1** from their upstream tagged
 releases, and place their executables on PATH. `make tools` verifies exact versions;
 CI installs these same releases with verified SHA-256 checksums. Tool installation is maintainer setup and
-is not required by library consumers. The package currently has no dependencies.
+is not required by library consumers. The Tree-sitter runtime dependency is pinned in Package.swift; the Swift grammar
+is vendored with [provenance](Vendor/tree-sitter-swift/PROVENANCE.md).
 
 - `make build`: compile the library and example.
 - `make test`: run Swift Testing contract tests.
@@ -19,7 +20,7 @@ is not required by library consumers. The package currently has no dependencies.
 
 Commit the root Package.resolved when dependencies are introduced, to reproduce
 maintainer and CI builds. Library consumers resolve their own dependency graph;
-the root lockfile does not pin their builds. No lockfile exists until needed.
+the root lockfile does not pin their builds. The current runtime resolution is committed.
 
 Keep downloaded tools in ignored `.tools/`, scratch artifacts in `.cache/`, and
 build output in `.build/`. Never commit credentials, downloaded toolchains, editor
@@ -27,7 +28,11 @@ state, or machine-specific paths. Intentional test fixtures under Fixtures retai
 exact bytes, including CRLF. Check `git status --short` after validation.
 
 Changes should explain behavior, validation, and limitations. Preserve API
-boundaries described in docs/API.md. Backward compatibility is not required until
+boundaries described in docs/API.md and docs/ARCHITECTURE.md. Core tests import
+`SourceSymbolsCore` without a parser dependency; integration tests use the consumer
+`SourceSymbols` import. Reuse the backend contract helpers for additional languages,
+and keep syntax fixtures and language-specific assertions independently specified.
+Backward compatibility is not required until
 the first proper release; breaking API changes are welcome when they improve the design.
 
 ## Continuous integration

@@ -1,0 +1,61 @@
+{
+  "declarations": [
+    {
+      "name": "Example",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        85,
+        92
+      ],
+      "declarationRange": [
+        40,
+        318
+      ]
+    },
+    {
+      "name": "run",
+      "kind": "method",
+      "scopes": [
+        "Example"
+      ],
+      "identifierRange": [
+        170,
+        173
+      ],
+      "declarationRange": [
+        128,
+        213
+      ]
+    },
+    {
+      "name": "count",
+      "kind": "property",
+      "scopes": [
+        "Example"
+      ],
+      "identifierRange": [
+        281,
+        286
+      ],
+      "declarationRange": [
+        270,
+        295
+      ]
+    },
+    {
+      "name": "Following",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        367,
+        376
+      ],
+      "declarationRange": [
+        360,
+        379
+      ]
+    }
+  ],
+  "diagnosticRanges": []
+}

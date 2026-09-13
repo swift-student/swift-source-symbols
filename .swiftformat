@@ -1,5 +1,5 @@
 --swiftversion 6.0
---exclude .build,.swiftpm,Vendor,Generated
+--exclude .build,.swiftpm,.cache,.tools,Vendor,Generated,Tests/SourceSymbolsTests/Fixtures
 --indent 4
 --maxwidth 120
 --self remove

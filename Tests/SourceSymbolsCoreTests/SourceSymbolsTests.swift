@@ -1,4 +1,4 @@
-import SourceSymbols
+import SourceSymbolsCore
 import Testing
 
 @Test func unicodeRangesAndSnapshotIdentity() throws {
@@ -17,9 +17,17 @@ import Testing
 @Test func matchingPreservesOverloadsAndScopes() throws {
     let source = SourceSnapshot(text: "run", language: .swift)
     let range = try #require(source.range(0 ..< 3))
-    let declarations = try ["A.run()", "A.run(value:)", "B.run()"].map { signature in
-        try Declaration(name: "run", qualifiedName: String(signature.prefix(5)), kind: .method,
-                        signature: signature, identifierRange: range, declarationRange: range)
+    let declarations = try [
+        ("A", []),
+        ("A", [CallableSignature.Parameter(argumentLabel: "value", typeSyntax: "Int")]),
+        ("B", []),
+    ].map { scope, parameters in
+        let callableName = parameters.isEmpty ? "run()" : "run(value:)"
+        return try Declaration(name: "run", qualifiedName: scope + ".run", kind: .method,
+                               signature: .init(parameters: parameters), callableName: callableName,
+                               qualifiedCallableName: scope + "." + callableName,
+                               enclosingScopes: [scope], identifierRange: range,
+                               declarationRange: range)
     }
     if case let .ambiguous(candidates) = DeclarationMatcher.match(.init(name: .short("run")), in: declarations) {
         #expect(candidates.count == 3)
@@ -32,9 +40,9 @@ import Testing
         Issue.record("Expected scoped overloads")
     }
     if case let .unique(found) = DeclarationMatcher.match(
-        .init(name: .short("run"), signature: "A.run(value:)"), in: declarations
+        .init(name: .qualified("A.run(value:)")), in: declarations
     ) {
-        #expect(found.signature == "A.run(value:)")
+        #expect(found.signature?.parameters == [.init(argumentLabel: "value", typeSyntax: "Int")])
     } else {
         Issue.record("Expected exact signature")
     }

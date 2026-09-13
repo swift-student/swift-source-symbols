@@ -1,0 +1,183 @@
+{
+  "declarations": [
+    {
+      "name": "NavigationIndex",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        89,
+        104
+      ],
+      "declarationRange": [
+        82,
+        828
+      ]
+    },
+    {
+      "name": "Entry",
+      "kind": "type",
+      "scopes": [
+        "NavigationIndex"
+      ],
+      "identifierRange": [
+        133,
+        138
+      ],
+      "declarationRange": [
+        126,
+        199
+      ]
+    },
+    {
+      "name": "key",
+      "kind": "property",
+      "scopes": [
+        "NavigationIndex",
+        "Entry"
+      ],
+      "identifierRange": [
+        153,
+        156
+      ],
+      "declarationRange": [
+        149,
+        161
+      ]
+    },
+    {
+      "name": "offsets",
+      "kind": "property",
+      "scopes": [
+        "NavigationIndex",
+        "Entry"
+      ],
+      "identifierRange": [
+        174,
+        181
+      ],
+      "declarationRange": [
+        170,
+        193
+      ]
+    },
+    {
+      "name": "entries",
+      "kind": "property",
+      "scopes": [
+        "NavigationIndex"
+      ],
+      "identifierRange": [
+        217,
+        224
+      ],
+      "declarationRange": [
+        205,
+        246
+      ]
+    },
+    {
+      "name": "init",
+      "kind": "initializer",
+      "scopes": [
+        "NavigationIndex"
+      ],
+      "identifierRange": [
+        252,
+        256
+      ],
+      "declarationRange": [
+        252,
+        391
+      ]
+    },
+    {
+      "name": "insert",
+      "kind": "method",
+      "scopes": [
+        "NavigationIndex"
+      ],
+      "identifierRange": [
+        411,
+        417
+      ],
+      "declarationRange": [
+        397,
+        495
+      ]
+    },
+    {
+      "name": "matches",
+      "kind": "method",
+      "scopes": [
+        "NavigationIndex"
+      ],
+      "identifierRange": [
+        506,
+        513
+      ],
+      "declarationRange": [
+        501,
+        647
+      ]
+    },
+    {
+      "name": "map",
+      "kind": "method",
+      "scopes": [
+        "NavigationIndex"
+      ],
+      "identifierRange": [
+        658,
+        661
+      ],
+      "declarationRange": [
+        653,
+        783
+      ]
+    },
+    {
+      "name": "isEmpty",
+      "kind": "property",
+      "scopes": [
+        "NavigationIndex"
+      ],
+      "identifierRange": [
+        793,
+        800
+      ],
+      "declarationRange": [
+        789,
+        826
+      ]
+    },
+    {
+      "name": "NavigationIndex.Entry",
+      "kind": "extensionScope",
+      "scopes": [],
+      "identifierRange": [
+        840,
+        861
+      ],
+      "declarationRange": [
+        830,
+        947
+      ]
+    },
+    {
+      "name": "contains",
+      "kind": "method",
+      "scopes": [
+        "NavigationIndex.Entry"
+      ],
+      "identifierRange": [
+        873,
+        881
+      ],
+      "declarationRange": [
+        868,
+        945
+      ]
+    }
+  ],
+  "diagnosticRanges": []
+}

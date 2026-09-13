@@ -1,0 +1,395 @@
+{
+  "declarations": [
+    {
+      "name": "Store",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        7,
+        12
+      ],
+      "declarationRange": [
+        0,
+        335
+      ]
+    },
+    {
+      "name": "count",
+      "kind": "property",
+      "scopes": [
+        "Store"
+      ],
+      "identifierRange": [
+        23,
+        28
+      ],
+      "declarationRange": [
+        19,
+        37
+      ]
+    },
+    {
+      "name": "title",
+      "kind": "property",
+      "scopes": [
+        "Store"
+      ],
+      "identifierRange": [
+        46,
+        51
+      ],
+      "declarationRange": [
+        42,
+        77
+      ]
+    },
+    {
+      "name": "enabled",
+      "kind": "property",
+      "scopes": [
+        "Store"
+      ],
+      "identifierRange": [
+        63,
+        70
+      ],
+      "declarationRange": [
+        42,
+        77
+      ]
+    },
+    {
+      "name": "run",
+      "kind": "method",
+      "scopes": [
+        "Store"
+      ],
+      "identifierRange": [
+        87,
+        90
+      ],
+      "declarationRange": [
+        82,
+        95
+      ]
+    },
+    {
+      "name": "run",
+      "kind": "method",
+      "scopes": [
+        "Store"
+      ],
+      "identifierRange": [
+        105,
+        108
+      ],
+      "declarationRange": [
+        100,
+        123
+      ]
+    },
+    {
+      "name": "run",
+      "kind": "method",
+      "scopes": [
+        "Store"
+      ],
+      "identifierRange": [
+        133,
+        136
+      ],
+      "declarationRange": [
+        128,
+        154
+      ]
+    },
+    {
+      "name": "run",
+      "kind": "method",
+      "scopes": [
+        "Store"
+      ],
+      "identifierRange": [
+        164,
+        167
+      ],
+      "declarationRange": [
+        159,
+        188
+      ]
+    },
+    {
+      "name": "Nested",
+      "kind": "type",
+      "scopes": [
+        "Store"
+      ],
+      "identifierRange": [
+        200,
+        206
+      ],
+      "declarationRange": [
+        193,
+        246
+      ]
+    },
+    {
+      "name": "run",
+      "kind": "method",
+      "scopes": [
+        "Store",
+        "Nested"
+      ],
+      "identifierRange": [
+        222,
+        225
+      ],
+      "declarationRange": [
+        217,
+        240
+      ]
+    },
+    {
+      "name": "init",
+      "kind": "initializer",
+      "scopes": [
+        "Store"
+      ],
+      "identifierRange": [
+        251,
+        255
+      ],
+      "declarationRange": [
+        251,
+        290
+      ]
+    },
+    {
+      "name": "subscript",
+      "kind": "subscriptDeclaration",
+      "scopes": [
+        "Store"
+      ],
+      "identifierRange": [
+        295,
+        304
+      ],
+      "declarationRange": [
+        295,
+        333
+      ]
+    },
+    {
+      "name": "Store.Nested",
+      "kind": "extensionScope",
+      "scopes": [],
+      "identifierRange": [
+        346,
+        358
+      ],
+      "declarationRange": [
+        336,
+        382
+      ]
+    },
+    {
+      "name": "extra",
+      "kind": "method",
+      "scopes": [
+        "Store.Nested"
+      ],
+      "identifierRange": [
+        370,
+        375
+      ],
+      "declarationRange": [
+        365,
+        380
+      ]
+    },
+    {
+      "name": "Runnable",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        392,
+        400
+      ],
+      "declarationRange": [
+        383,
+        498
+      ]
+    },
+    {
+      "name": "Output",
+      "kind": "associatedType",
+      "scopes": [
+        "Runnable"
+      ],
+      "identifierRange": [
+        422,
+        428
+      ],
+      "declarationRange": [
+        407,
+        428
+      ]
+    },
+    {
+      "name": "value",
+      "kind": "property",
+      "scopes": [
+        "Runnable"
+      ],
+      "identifierRange": [
+        437,
+        442
+      ],
+      "declarationRange": [
+        433,
+        458
+      ]
+    },
+    {
+      "name": "run",
+      "kind": "method",
+      "scopes": [
+        "Runnable"
+      ],
+      "identifierRange": [
+        468,
+        471
+      ],
+      "declarationRange": [
+        463,
+        496
+      ]
+    },
+    {
+      "name": "Count",
+      "kind": "typeAlias",
+      "scopes": [],
+      "identifierRange": [
+        509,
+        514
+      ],
+      "declarationRange": [
+        499,
+        520
+      ]
+    },
+    {
+      "name": "State",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        526,
+        531
+      ],
+      "declarationRange": [
+        521,
+        561
+      ]
+    },
+    {
+      "name": "idle",
+      "kind": "enumCase",
+      "scopes": [
+        "State"
+      ],
+      "identifierRange": [
+        543,
+        547
+      ],
+      "declarationRange": [
+        538,
+        559
+      ]
+    },
+    {
+      "name": "ready",
+      "kind": "enumCase",
+      "scopes": [
+        "State"
+      ],
+      "identifierRange": [
+        549,
+        554
+      ],
+      "declarationRange": [
+        538,
+        559
+      ]
+    },
+    {
+      "name": "left",
+      "kind": "variable",
+      "scopes": [],
+      "identifierRange": [
+        567,
+        571
+      ],
+      "declarationRange": [
+        562,
+        588
+      ]
+    },
+    {
+      "name": "right",
+      "kind": "variable",
+      "scopes": [],
+      "identifierRange": [
+        573,
+        578
+      ],
+      "declarationRange": [
+        562,
+        588
+      ]
+    },
+    {
+      "name": "outer",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        594,
+        599
+      ],
+      "declarationRange": [
+        589,
+        643
+      ]
+    },
+    {
+      "name": "local",
+      "kind": "variable",
+      "scopes": [
+        "outer"
+      ],
+      "identifierRange": [
+        612,
+        617
+      ],
+      "declarationRange": [
+        608,
+        621
+      ]
+    },
+    {
+      "name": "inner",
+      "kind": "function",
+      "scopes": [
+        "outer"
+      ],
+      "identifierRange": [
+        631,
+        636
+      ],
+      "declarationRange": [
+        626,
+        641
+      ]
+    }
+  ],
+  "diagnosticRanges": []
+}
