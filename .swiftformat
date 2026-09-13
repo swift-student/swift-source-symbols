@@ -1,0 +1,5 @@
+--swiftversion 6.0
+--exclude .build,.swiftpm,Vendor,Generated
+--indent 4
+--maxwidth 120
+--self remove

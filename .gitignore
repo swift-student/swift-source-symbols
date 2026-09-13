@@ -1,0 +1,13 @@
+.build/
+.swiftpm/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.DS_Store
+.idea/
+.vscode/
+*.swp
+.cache/
+.tools/
+.env
+.env.*

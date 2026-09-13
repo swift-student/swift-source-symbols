@@ -1,0 +1,11 @@
+only_rules:
+  - force_cast
+  - force_try
+  - trailing_whitespace
+  - vertical_whitespace
+  - duplicate_imports
+excluded:
+  - .build
+  - .swiftpm
+  - Vendor
+  - Generated
