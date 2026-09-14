@@ -29,6 +29,8 @@ Run `make check` with Swift and the pinned tools described in
 [CONTRIBUTING.md](CONTRIBUTING.md). Run `swift run UsageExample` for the compiled
 in-memory extraction/matching example in [Examples/main.swift](Examples/main.swift).
 The example matches Swift overloads by label and type, and Ruby definitions by their untyped parameter lists.
+It also converts an extracted identifier to a one-based line and UTF-16 column
+using a reusable, snapshot-bound `SourcePositionIndex`.
 
 The library product and importable module are both `SourceSymbols`. For local
 consumer experiments, add `.package(path: "../swift-source-symbols")` to your

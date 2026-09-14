@@ -7,11 +7,16 @@ struct Example {
 }
 """, language: .swift)
 let result = try TreeSitterSwiftExtractor().extract(from: snapshot)
+/// Reuse this index when translating many declarations from the same snapshot.
+let positions = SourcePositionIndex(snapshot: snapshot)
 if case let .unique(declaration) = DeclarationMatcher.match(
     DeclarationQuery(name: .qualified("Example.run(value:)"), parameterTypes: ["Int"]),
     in: result.declarations
 ) {
     print(snapshot.text(in: declaration.declarationRange) ?? "")
+    if let position = positions.position(in: declaration.identifierRange, columnEncoding: .utf16) {
+        print("Identifier at line \(position.line), UTF-16 column \(position.column)")
+    }
 }
 
 for diagnostic in result.diagnostics {

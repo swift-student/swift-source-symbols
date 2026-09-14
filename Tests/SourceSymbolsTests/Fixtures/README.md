@@ -1,6 +1,6 @@
 # Declaration corpus
 
-These are original, intentionally small Swift sources authored for issue #6, not
+The issue #6 corpus consists of original, intentionally small Swift sources, not
 copied from third-party applications. `representative.swift` models an in-memory
 navigation index to exercise realistic nested/generic declarations and closures.
 `block-comment.swift` preserves the exact source reproducer recorded in issue #6.
@@ -21,7 +21,7 @@ Additional expectations, including callable metadata and recovery, live in
 TreeSitterSwiftExtractorTests.swift. Unsupported syntax is listed in
 [the backend decision](../../../../docs/SWIFT_BACKEND.md).
 
-All `.swift` fixtures except `incomplete*.swift` were accepted by Swift 6.4's frontend
+The issue #6 `.swift` fixtures except `incomplete*.swift` were accepted by Swift 6.4's frontend
 parser on 2026-09-13. This is syntactic validity, not successful typechecking: some
 fixtures intentionally reference undeclared types or duplicate overloads/branches.
 Tree-sitter still reports known false-positive diagnostics for `block-comment.swift`
@@ -31,6 +31,14 @@ and `conditional.swift`. They remain valid-source regressions, not invalid Swift
 the original bytes, emoji, decomposed accent, and identifier escaping. Git attributes
 and both formatting tools exclude fixtures from normalization. Never run a formatter
 over these files. Incomplete syntax and known grammar gaps must remain reproducible.
+
+`source-link-navigation-lf.swift` preserves the in-memory lookup source from
+[Source Link PR #14's tests at `8fede125`](https://github.com/swift-student/source-link/blob/8fede125a61747c2671b31f7e188f2ed32061430/Packages/SourceLinkPackage/Tests/SourceLinkCoreTests/SwiftSymbolTests.swift).
+`source-link-navigation-crlf.swift` is its exact CRLF counterpart; neither has a
+trailing newline. `SourcePositionIntegrationTests.swift` retains that consumer's
+expected navigation lines and Unicode column, with additional columns specified
+from source bytes. These fixtures retain the known block-comment false positive;
+matching declarations and converting their positions does not suppress diagnostics.
 
 The original Ruby corpus lives in [Ruby](Ruby/README.md), with separate language
 expectations and the same snapshot/range/matching contract helpers.
