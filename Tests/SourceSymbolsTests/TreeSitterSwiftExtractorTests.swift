@@ -2,7 +2,7 @@ import Foundation
 import SourceSymbols
 import Testing
 
-private func fixture(_ name: String) throws -> SourceSnapshot {
+func fixture(_ name: String) throws -> SourceSnapshot {
     let url = try #require(Bundle.module.url(forResource: name, withExtension: "swift", subdirectory: "Fixtures"))
     let data = try Data(contentsOf: url)
     return try SourceSnapshot(text: #require(String(data: data, encoding: .utf8)), language: .swift)
@@ -11,9 +11,13 @@ private func fixture(_ name: String) throws -> SourceSnapshot {
 private struct ExpectedFixture: Decodable {
     let declarations: [ExpectedDeclaration]
     let diagnosticRanges: [[Int]]
+    let qualifiedNames: [String]
+    let callableNames: [String?]?
+    let qualifiedCallableNames: [String?]?
 }
 
-@Test(arguments: ["declarations", "callables", "trivia", "conditional", "unicode-lf", "unicode-crlf", "representative"])
+@Test(arguments: ["declarations", "callables", "trivia", "conditional", "unicode-lf", "unicode-crlf", "representative",
+                  "enum-associated-values", "callable-scopes"])
 func declarationCorpus(name: String) throws {
     let snapshot = try fixture(name)
     let url = try #require(Bundle.module.url(forResource: name, withExtension: "json", subdirectory: "Fixtures"))
@@ -21,12 +25,16 @@ func declarationCorpus(name: String) throws {
     let result = try TreeSitterSwiftExtractor().extract(from: snapshot)
     try expectBackendContract(result, from: snapshot, declarations: expected.declarations,
                               diagnosticRanges: expected.diagnosticRanges.map { $0[0] ..< $0[1] })
-    for declaration in result.declarations {
-        #expect(declaration.qualifiedName == (declaration.enclosingScopes + [declaration.name]).joined(separator: "."))
+    #expect(result.declarations.map(\.qualifiedName) == expected.qualifiedNames)
+    if let names = expected.callableNames {
+        #expect(result.declarations.map(\.callableName) == names)
+    }
+    if let names = expected.qualifiedCallableNames {
+        #expect(result.declarations.map(\.qualifiedCallableName) == names)
     }
 }
 
-private func candidates(_ query: DeclarationQuery, in result: ExtractionResult) -> [Declaration] {
+func candidates(_ query: DeclarationQuery, in result: ExtractionResult) -> [Declaration] {
     switch DeclarationMatcher.match(query, in: result.declarations) {
     case .missing: []
     case let .unique(declaration): [declaration]
@@ -117,8 +125,8 @@ private func candidates(_ query: DeclarationQuery, in result: ExtractionResult) 
     let nested = candidates(.init(name: .qualified("Store.Nested")), in: result)
     #expect(nested.map(\.kind) == [.type, .extensionScope])
     #expect(candidates(.init(name: .qualified("Store.subscript(_:)")), in: result).count == 1)
-    #expect(candidates(.init(name: .qualified("outer.local")), in: result).first?.kind == .variable)
-    #expect(candidates(.init(name: .qualified("outer.inner()")), in: result).first?.kind == .function)
+    #expect(candidates(.init(name: .qualified("outer().local")), in: result).first?.kind == .variable)
+    #expect(candidates(.init(name: .qualified("outer().inner()")), in: result).first?.kind == .function)
     let conditional = try TreeSitterSwiftExtractor().extract(from: fixture("conditional"))
     #expect(candidates(.init(name: .short("Choice")), in: conditional).count == 2)
     #expect(candidates(.init(name: .qualified("Choice.a()")), in: conditional).count == 1)
@@ -293,9 +301,9 @@ func unicodeIdentifiersAndEscaping(name: String) throws {
     let result = try TreeSitterSwiftExtractor().extract(from: fixture("tuple-bindings"))
     #expect(result.diagnostics.isEmpty)
     #expect(result.declarations.filter { !$0.enclosingScopes.isEmpty }.map(\.qualifiedName) == [
-        "bindings.only", "bindings.temporary", "bindings.nested", "bindings.nestedTemporary",
-        "bindings.labeled", "bindings.labeledTemporary", "bindings.single", "bindings.single.singleTemporary",
-        "bindings.first", "bindings.second", "bindings.second.secondTemporary",
+        "bindings().only", "bindings().temporary", "bindings().nested", "bindings().nestedTemporary",
+        "bindings().labeled", "bindings().labeledTemporary", "bindings().single", "bindings().single.singleTemporary",
+        "bindings().first", "bindings().second", "bindings().second.secondTemporary",
     ])
 }
 

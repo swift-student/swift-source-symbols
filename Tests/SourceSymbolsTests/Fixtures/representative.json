@@ -179,5 +179,19 @@
       ]
     }
   ],
-  "diagnosticRanges": []
+  "diagnosticRanges": [],
+  "qualifiedNames": [
+    "NavigationIndex",
+    "NavigationIndex.Entry",
+    "NavigationIndex.Entry.key",
+    "NavigationIndex.Entry.offsets",
+    "NavigationIndex.entries",
+    "NavigationIndex.init",
+    "NavigationIndex.insert",
+    "NavigationIndex.matches",
+    "NavigationIndex.map",
+    "NavigationIndex.isEmpty",
+    "NavigationIndex.Entry",
+    "NavigationIndex.Entry.contains"
+  ]
 }

@@ -93,12 +93,15 @@ the end is the last available source token; missing syntax is never invented.
 Each name in a multi-binding `let`/`var` or enum case group shares the group's full
 range. The identifier is always contained in the declaration.
 
-Named scopes include types, extensions, callables, and individual property/variable
+Named lexical scopes include types, extensions, callables, and individual property/variable
 initializers and accessors. A tuple binding's shared initializer has no single name
 and contributes no scope component. Anonymous closures and control-flow blocks
-contribute no name. Local declarations in separate anonymous blocks or overloads
-can consequently have the same qualified name; all remain available. Method and
-property kinds apply in a type's member context; functions/variables inside bodies,
+contribute no name. Lexical scope components retain base names, independently of
+lookup paths. For example, a function nested in `Host.outer(value:)` has
+`enclosingScopes == ["Host", "outer"]` while its qualified lookup path includes
+`outer(value:)`. Local declarations in separate anonymous blocks or overloads
+with identical labels can consequently have the same qualified name; all remain
+available. Method and property kinds apply in a type's member context; functions/variables inside bodies,
 initializers, and accessors are local. Results follow syntax traversal order:
 parents before descendants, sibling nodes and grouped bindings in source order.
 
@@ -130,14 +133,47 @@ whitespace, type-alias, or semantic normalization; `Int` and `Swift.Int` remain
 distinct. Static/instance modifiers, declaration attributes, and initializer
 failability are not represented, so some declarations may still remain ambiguous.
 
-`name`/`qualifiedName` omit parameter lists. `callableName` and
-`qualifiedCallableName` are supplied by the backend. The Swift adapter adds external
-labels, for example `run(value:)` and `Store.run(value:)`, rendering a nil label as
-`_`. Operator and subscript parameters without an explicit external label have nil
-labels. Swift non-callables and callables with an unreliably recovered header have
+`name` omits parameter lists. `qualifiedName` omits the declaration's own parameter
+list, but the Swift adapter uses label-bearing names for every enclosing callable.
+For example, a nested function has `name == "inner"`,
+`qualifiedName == "Host.outer(value:).inner"`, `callableName == "inner()"`, and
+`qualifiedCallableName == "Host.outer(value:).inner()"`. A nested variable uses
+`Host.outer(value:).local` and has no callable alias. This convention also applies
+through nested types, property initializers/accessors, initializers, subscripts,
+and deinitializers; zero-parameter callable scope components include `()`.
+The previous `Host.outer.inner()` spelling is not an additional alias.
+
+`callableName` and `qualifiedCallableName` are supplied by the backend. The Swift
+adapter adds external labels, for example `run(value:)` and `Store.run(value:)`,
+rendering a nil label as `_`. Operator and subscript parameters without an explicit
+external label have nil labels. Enclosing overloads with different labels produce
+distinct paths; those sharing labels remain ambiguous even if their parameter
+types differ. Query signature/type filters apply only to the declaration being
+matched, not to its enclosing callables. An enclosing callable with an unreliably
+recovered header contributes its base name as a fallback, with diagnostics retained.
+Swift non-callables and callables with an unreliably recovered header have
 no callable name/signature. The core permits a signature without callable aliases;
 providing metadata alone never invents a new lookup spelling.
 A body error alone does not discard a sound header's signature.
+
+Associated-value enum cases retain kind `enumCase` and provide callable aliases
+and signatures: `case payload(value: Int)` matches both `Event.payload` and
+`Event.payload(value:)`; `case pair(Int, text: String)` adds `pair(_:text:)`.
+Each case in a comma-separated group owns its own signature while retaining the
+shared full declaration range and its own identifier range. Parameters record
+labels, type syntax, positional passing, and default presence. Their binding
+`name` is nil because associated-value declarations introduce no local bindings;
+return types and enclosing enum generic syntax are not inferred. Ordinary and
+raw-value cases have no signature or parenthesized alias. A damaged associated-value
+list has no signature/alias; healthy sibling cases can still have them.
+
+Swift parameters are deliberately **not independently navigable declarations**.
+Function, initializer, subscript, closure, and enum associated-value parameters
+do not add declaration results, identifier ranges, or named lexical scopes.
+Callable parameter bindings remain available as signature metadata where supported;
+`Host.outer(value:).value` does not navigate to the parameter. A separately declared
+local variable remains navigable. This policy does not add a parameter declaration
+category based on incidental output from another backend.
 
 `DeclarationQuery` matches short or qualified names, accepting either the base
 name or the callable name. Optional `parameterTypes: [String?]?` narrows by the
@@ -211,6 +247,8 @@ minimum. Both backends have been locally validated with Swift 6.4 on macOS 26.6.
 (arm64). The configured Swift 6.0/6.2 CI matrix still needs to run against these
 changes; macOS 13 runtime, iOS, and Linux are not validated. SourceKitten execution
 and a SwiftSyntax comparison were intentionally deferred in the issue #6 discussion.
+Issue #13 records a later consumer-side comparison and adds regression coverage
+for the lookup cases described above; full SourceKitten parity is not established.
 UI, URLs, editor launching, file loading, Git snapshots, and anchor relocation
 belong in consumer adapters. Backward compatibility is not required before the
 first proper release.

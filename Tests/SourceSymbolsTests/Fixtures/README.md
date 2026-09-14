@@ -12,13 +12,25 @@ bindings, defaults, escaped names, and variadic parameter packs. Shared backend 
 `../Support/BackendContract.swift`; language-specific spelling and signature checks
 remain in the Swift tests.
 
+Issue #13 adds `enum-associated-values.swift` and `callable-scopes.swift`, with
+source-authored JSON expectations for lexical scopes, lookup names, and exact byte
+ranges. `enum-associated-labels.swift` covers explicit and escaped underscore
+labels plus nested type/default punctuation. `lookup-recovery.swift` retains damaged
+associated-value and callable headers alongside healthy siblings and bodies.
+`enum-underscore-label.swift` retains a valid-source grammar false positive:
+`case value(_: Int)` is base-name searchable but has no reliable signature.
+The new valid-source fixtures were accepted by Swift 6.4's frontend on 2026-09-14;
+`lookup-recovery.swift` is intentionally malformed.
+
 JSON files specify expected declarations independently of the extractor: logical
 name, kind, lexical scope names, and zero-based half-open UTF-8 identifier and full
-declaration ranges. They also specify expected diagnostic ranges; an empty list
+declaration ranges. `qualifiedNames` independently specifies lookup paths, which
+can differ from joined lexical scopes; the issue #13 JSON also specifies callable
+and qualified callable names. They also specify expected diagnostic ranges; an empty list
 means a clean parse is expected. Never regenerate expectations from backend output
 to make a regression pass. Inspect source bytes and the public contract instead.
 Additional expectations, including callable metadata and recovery, live in
-TreeSitterSwiftExtractorTests.swift. Unsupported syntax is listed in
+TreeSitterSwiftExtractorTests.swift and SwiftLookupTests.swift. Unsupported syntax is listed in
 [the backend decision](../../../../docs/SWIFT_BACKEND.md).
 
 The issue #6 `.swift` fixtures except `incomplete*.swift` were accepted by Swift 6.4's frontend

@@ -44,6 +44,7 @@ private struct SwiftSyntaxExtraction {
     struct Work {
         let node: SyntaxNode
         let scopes: [String]
+        let lookupScopes: [String]
         let context: Context
     }
 
@@ -58,7 +59,7 @@ private struct SwiftSyntaxExtraction {
     }
 
     mutating func extract(root: SyntaxNode) throws -> ExtractionResult {
-        var stack = [Work(node: root, scopes: [], context: .file)]
+        var stack = [Work(node: root, scopes: [], lookupScopes: [], context: .file)]
         while let work = stack.popLast() {
             let node = work.node
             let nodeChildren = node.children
@@ -75,17 +76,21 @@ private struct SwiftSyntaxExtraction {
                                                    message: "Tree-sitter: recovered syntax in \(node.kind)",
                                                    range: snapshot.range(node.offsets)))
             }
-            let found = try extractDeclarations(node, scopes: work.scopes, context: work.context)
+            let found = try extractDeclarations(node, scopes: work.scopes, lookupScopes: work.lookupScopes,
+                                                context: work.context)
             declarations.append(contentsOf: found)
             var scopes = work.scopes
+            var lookupScopes = work.lookupScopes
             var context = work.context
             if let declaration = found.first {
                 switch declaration.kind {
                 case .type, .extensionScope:
                     scopes.append(declaration.name)
+                    lookupScopes.append(declaration.name)
                     context = .type
                 case .function, .method, .initializer, .deinitializer, .subscriptDeclaration:
                     scopes.append(declaration.name)
+                    lookupScopes.append(declaration.callableName ?? declaration.name)
                     context = .local
                 case .property, .variable:
                     // A property's initializer/accessors are not the enclosing type's member scope.
@@ -111,7 +116,8 @@ private struct SwiftSyntaxExtraction {
                         bindingScope = [binding.name]
                     }
                 }
-                children.append(Work(node: child, scopes: scopes + bindingScope, context: context))
+                children.append(Work(node: child, scopes: scopes + bindingScope,
+                                     lookupScopes: lookupScopes + bindingScope, context: context))
             }
             stack.append(contentsOf: children.reversed())
         }
@@ -122,7 +128,9 @@ private struct SwiftSyntaxExtraction {
         return try ExtractionResult(snapshot: snapshot, declarations: declarations, diagnostics: diagnostics)
     }
 
-    private func extractDeclarations(_ node: SyntaxNode, scopes: [String], context: Context) throws -> [Declaration] {
+    private func extractDeclarations(_ node: SyntaxNode, scopes: [String], lookupScopes: [String],
+                                     context: Context) throws -> [Declaration]
+    {
         let kind: Declaration.Kind
         var names: [SyntaxNode]
         var signature: CallableSignature?
@@ -163,7 +171,8 @@ private struct SwiftSyntaxExtraction {
                   let identifierRange = snapshot.range(nameNode.offsets) else { return nil }
             let name = kind == .extensionScope ? extensionName(nameNode) : unescape(text(nameNode))
             guard !name.isEmpty else { return nil }
-            let qualifiedName = (scopes + [name]).joined(separator: ".")
+            let qualifiedName = (lookupScopes + [name]).joined(separator: ".")
+            let signature = kind == .enumCase ? enumCaseSignature(node, name: nameNode) : signature
             let suffix = signature.map {
                 "(" + $0.parameters.map { ($0.argumentLabel ?? "_") + ":" }.joined() + ")"
             }
@@ -246,6 +255,30 @@ private struct SwiftSyntaxExtraction {
             returnType: returnType,
             genericConstraints: header.first(where: { $0.kind == "type_constraints" }).map(text)
         )
+    }
+
+    private func enumCaseSignature(_ node: SyntaxNode, name: SyntaxNode) -> CallableSignature? {
+        // Each case in a group owns only the suffix immediately following its name.
+        let suffix = node.children.drop { $0.end <= name.end }.prefix { $0.kind != "," }
+            .filter { !$0.isTrivia }
+        guard suffix.count == 1, let values = suffix.first, values.kind == "enum_type_parameters",
+              !values.hasError else { return nil }
+        let children = values.syntaxChildren
+        guard children.first?.kind == "(", children.last?.kind == ")" else { return nil }
+        // Only direct grammar children delimit values; nested type/default commas stay inside their nodes.
+        let parts = children.dropFirst().dropLast().split(omittingEmptySubsequences: false) { $0.kind == "," }
+        var parameters: [CallableSignature.Parameter] = []
+        for part in parts {
+            let annotation = part.prefix { $0.kind != "=" }
+            let colon = annotation.firstIndex { $0.kind == ":" }
+            let type = colon.map { annotation.suffix(from: annotation.index(after: $0)) } ?? annotation[...]
+            guard let first = type.first, let last = type.last else { return nil }
+            let label = colon.flatMap { _ in annotation.first }.flatMap { text($0) == "_" ? nil : unescape(text($0)) }
+            // Associated values have argument labels, but introduce no local parameter bindings.
+            parameters.append(.init(argumentLabel: label, typeSyntax: text(first.start ..< last.end),
+                                    hasDefaultValue: part.contains { $0.kind == "=" }))
+        }
+        return CallableSignature(parameters: parameters)
     }
 
     private func extensionName(_ node: SyntaxNode) -> String {

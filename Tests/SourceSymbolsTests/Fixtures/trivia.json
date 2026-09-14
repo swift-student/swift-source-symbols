@@ -57,5 +57,11 @@
       ]
     }
   ],
-  "diagnosticRanges": []
+  "diagnosticRanges": [],
+  "qualifiedNames": [
+    "Example",
+    "Example.run",
+    "Example.count",
+    "Following"
+  ]
 }

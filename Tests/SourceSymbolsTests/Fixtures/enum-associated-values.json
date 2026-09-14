@@ -1,0 +1,259 @@
+{
+  "declarations": [
+    {
+      "name": "Event",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        5,
+        10
+      ],
+      "declarationRange": [
+        0,
+        303
+      ]
+    },
+    {
+      "name": "ready",
+      "kind": "enumCase",
+      "scopes": [
+        "Event"
+      ],
+      "identifierRange": [
+        22,
+        27
+      ],
+      "declarationRange": [
+        17,
+        108
+      ]
+    },
+    {
+      "name": "payload",
+      "kind": "enumCase",
+      "scopes": [
+        "Event"
+      ],
+      "identifierRange": [
+        29,
+        36
+      ],
+      "declarationRange": [
+        17,
+        108
+      ]
+    },
+    {
+      "name": "raw",
+      "kind": "enumCase",
+      "scopes": [
+        "Event"
+      ],
+      "identifierRange": [
+        50,
+        53
+      ],
+      "declarationRange": [
+        17,
+        108
+      ]
+    },
+    {
+      "name": "mixed",
+      "kind": "enumCase",
+      "scopes": [
+        "Event"
+      ],
+      "identifierRange": [
+        60,
+        65
+      ],
+      "declarationRange": [
+        17,
+        108
+      ]
+    },
+    {
+      "name": "repeat",
+      "kind": "enumCase",
+      "scopes": [
+        "Event"
+      ],
+      "identifierRange": [
+        118,
+        126
+      ],
+      "declarationRange": [
+        113,
+        189
+      ]
+    },
+    {
+      "name": "café",
+      "kind": "enumCase",
+      "scopes": [
+        "Event"
+      ],
+      "identifierRange": [
+        199,
+        204
+      ],
+      "declarationRange": [
+        194,
+        228
+      ]
+    },
+    {
+      "name": "é",
+      "kind": "enumCase",
+      "scopes": [
+        "Event"
+      ],
+      "identifierRange": [
+        220,
+        223
+      ],
+      "declarationRange": [
+        194,
+        228
+      ]
+    },
+    {
+      "name": "choice",
+      "kind": "enumCase",
+      "scopes": [
+        "Event"
+      ],
+      "identifierRange": [
+        238,
+        244
+      ],
+      "declarationRange": [
+        233,
+        301
+      ]
+    },
+    {
+      "name": "choice",
+      "kind": "enumCase",
+      "scopes": [
+        "Event"
+      ],
+      "identifierRange": [
+        258,
+        264
+      ],
+      "declarationRange": [
+        233,
+        301
+      ]
+    },
+    {
+      "name": "choice",
+      "kind": "enumCase",
+      "scopes": [
+        "Event"
+      ],
+      "identifierRange": [
+        280,
+        286
+      ],
+      "declarationRange": [
+        233,
+        301
+      ]
+    },
+    {
+      "name": "Raw",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        309,
+        312
+      ],
+      "declarationRange": [
+        304,
+        347
+      ]
+    },
+    {
+      "name": "one",
+      "kind": "enumCase",
+      "scopes": [
+        "Raw"
+      ],
+      "identifierRange": [
+        329,
+        332
+      ],
+      "declarationRange": [
+        324,
+        345
+      ]
+    },
+    {
+      "name": "two",
+      "kind": "enumCase",
+      "scopes": [
+        "Raw"
+      ],
+      "identifierRange": [
+        338,
+        341
+      ],
+      "declarationRange": [
+        324,
+        345
+      ]
+    }
+  ],
+  "diagnosticRanges": [],
+  "qualifiedNames": [
+    "Event",
+    "Event.ready",
+    "Event.payload",
+    "Event.raw",
+    "Event.mixed",
+    "Event.repeat",
+    "Event.café",
+    "Event.é",
+    "Event.choice",
+    "Event.choice",
+    "Event.choice",
+    "Raw",
+    "Raw.one",
+    "Raw.two"
+  ],
+  "callableNames": [
+    null,
+    null,
+    "payload(value:)",
+    "raw(_:)",
+    "mixed(_:label:_:)",
+    "repeat(for:callback:)",
+    "café(😀:)",
+    "é(_:)",
+    "choice(value:)",
+    "choice(text:)",
+    "choice(value:)",
+    null,
+    null,
+    null
+  ],
+  "qualifiedCallableNames": [
+    null,
+    null,
+    "Event.payload(value:)",
+    "Event.raw(_:)",
+    "Event.mixed(_:label:_:)",
+    "Event.repeat(for:callback:)",
+    "Event.café(😀:)",
+    "Event.é(_:)",
+    "Event.choice(value:)",
+    "Event.choice(text:)",
+    "Event.choice(value:)",
+    null,
+    null,
+    null
+  ]
+}

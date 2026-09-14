@@ -1,0 +1,547 @@
+{
+  "declarations": [
+    {
+      "name": "Host",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        7,
+        11
+      ],
+      "declarationRange": [
+        0,
+        537
+      ]
+    },
+    {
+      "name": "outer",
+      "kind": "method",
+      "scopes": [
+        "Host"
+      ],
+      "identifierRange": [
+        23,
+        28
+      ],
+      "declarationRange": [
+        18,
+        322
+      ]
+    },
+    {
+      "name": "inner",
+      "kind": "function",
+      "scopes": [
+        "Host",
+        "outer"
+      ],
+      "identifierRange": [
+        56,
+        61
+      ],
+      "declarationRange": [
+        51,
+        66
+      ]
+    },
+    {
+      "name": "local",
+      "kind": "variable",
+      "scopes": [
+        "Host",
+        "outer"
+      ],
+      "identifierRange": [
+        79,
+        84
+      ],
+      "declarationRange": [
+        75,
+        92
+      ]
+    },
+    {
+      "name": "middle",
+      "kind": "function",
+      "scopes": [
+        "Host",
+        "outer"
+      ],
+      "identifierRange": [
+        106,
+        112
+      ],
+      "declarationRange": [
+        101,
+        175
+      ]
+    },
+    {
+      "name": "leaf",
+      "kind": "function",
+      "scopes": [
+        "Host",
+        "outer",
+        "middle"
+      ],
+      "identifierRange": [
+        146,
+        150
+      ],
+      "declarationRange": [
+        141,
+        165
+      ]
+    },
+    {
+      "name": "Nested",
+      "kind": "type",
+      "scopes": [
+        "Host",
+        "outer"
+      ],
+      "identifierRange": [
+        191,
+        197
+      ],
+      "declarationRange": [
+        184,
+        252
+      ]
+    },
+    {
+      "name": "member",
+      "kind": "method",
+      "scopes": [
+        "Host",
+        "outer",
+        "Nested"
+      ],
+      "identifierRange": [
+        217,
+        223
+      ],
+      "declarationRange": [
+        212,
+        242
+      ]
+    },
+    {
+      "name": "body",
+      "kind": "variable",
+      "scopes": [
+        "Host",
+        "outer",
+        "Nested",
+        "member"
+      ],
+      "identifierRange": [
+        232,
+        236
+      ],
+      "declarationRange": [
+        228,
+        240
+      ]
+    },
+    {
+      "name": "closure",
+      "kind": "variable",
+      "scopes": [
+        "Host",
+        "outer"
+      ],
+      "identifierRange": [
+        265,
+        272
+      ],
+      "declarationRange": [
+        261,
+        316
+      ]
+    },
+    {
+      "name": "captured",
+      "kind": "variable",
+      "scopes": [
+        "Host",
+        "outer",
+        "closure"
+      ],
+      "identifierRange": [
+        281,
+        289
+      ],
+      "declarationRange": [
+        277,
+        297
+      ]
+    },
+    {
+      "name": "outer",
+      "kind": "method",
+      "scopes": [
+        "Host"
+      ],
+      "identifierRange": [
+        332,
+        337
+      ],
+      "declarationRange": [
+        327,
+        371
+      ]
+    },
+    {
+      "name": "inner",
+      "kind": "function",
+      "scopes": [
+        "Host",
+        "outer"
+      ],
+      "identifierRange": [
+        359,
+        364
+      ],
+      "declarationRange": [
+        354,
+        369
+      ]
+    },
+    {
+      "name": "outer",
+      "kind": "method",
+      "scopes": [
+        "Host"
+      ],
+      "identifierRange": [
+        381,
+        386
+      ],
+      "declarationRange": [
+        376,
+        421
+      ]
+    },
+    {
+      "name": "inner",
+      "kind": "function",
+      "scopes": [
+        "Host",
+        "outer"
+      ],
+      "identifierRange": [
+        409,
+        414
+      ],
+      "declarationRange": [
+        404,
+        419
+      ]
+    },
+    {
+      "name": "init",
+      "kind": "initializer",
+      "scopes": [
+        "Host"
+      ],
+      "identifierRange": [
+        426,
+        430
+      ],
+      "declarationRange": [
+        426,
+        462
+      ]
+    },
+    {
+      "name": "local",
+      "kind": "variable",
+      "scopes": [
+        "Host",
+        "init"
+      ],
+      "identifierRange": [
+        448,
+        453
+      ],
+      "declarationRange": [
+        444,
+        460
+      ]
+    },
+    {
+      "name": "subscript",
+      "kind": "subscriptDeclaration",
+      "scopes": [
+        "Host"
+      ],
+      "identifierRange": [
+        467,
+        476
+      ],
+      "declarationRange": [
+        467,
+        535
+      ]
+    },
+    {
+      "name": "local",
+      "kind": "variable",
+      "scopes": [
+        "Host",
+        "subscript"
+      ],
+      "identifierRange": [
+        506,
+        511
+      ],
+      "declarationRange": [
+        502,
+        519
+      ]
+    },
+    {
+      "name": "Host",
+      "kind": "extensionScope",
+      "scopes": [],
+      "identifierRange": [
+        548,
+        552
+      ],
+      "declarationRange": [
+        538,
+        634
+      ]
+    },
+    {
+      "name": "repeat",
+      "kind": "method",
+      "scopes": [
+        "Host"
+      ],
+      "identifierRange": [
+        564,
+        572
+      ],
+      "declarationRange": [
+        559,
+        632
+      ]
+    },
+    {
+      "name": "café",
+      "kind": "function",
+      "scopes": [
+        "Host",
+        "repeat"
+      ],
+      "identifierRange": [
+        598,
+        603
+      ],
+      "declarationRange": [
+        593,
+        630
+      ]
+    },
+    {
+      "name": "é",
+      "kind": "variable",
+      "scopes": [
+        "Host",
+        "repeat",
+        "café"
+      ],
+      "identifierRange": [
+        621,
+        624
+      ],
+      "declarationRange": [
+        617,
+        628
+      ]
+    },
+    {
+      "name": "Lifetime",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        641,
+        649
+      ],
+      "declarationRange": [
+        635,
+        682
+      ]
+    },
+    {
+      "name": "deinit",
+      "kind": "deinitializer",
+      "scopes": [
+        "Lifetime"
+      ],
+      "identifierRange": [
+        656,
+        662
+      ],
+      "declarationRange": [
+        656,
+        680
+      ]
+    },
+    {
+      "name": "local",
+      "kind": "variable",
+      "scopes": [
+        "Lifetime",
+        "deinit"
+      ],
+      "identifierRange": [
+        669,
+        674
+      ],
+      "declarationRange": [
+        665,
+        678
+      ]
+    },
+    {
+      "name": "anonymous",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        688,
+        697
+      ],
+      "declarationRange": [
+        683,
+        770
+      ]
+    },
+    {
+      "name": "repeated",
+      "kind": "variable",
+      "scopes": [
+        "anonymous"
+      ],
+      "identifierRange": [
+        720,
+        728
+      ],
+      "declarationRange": [
+        716,
+        732
+      ]
+    },
+    {
+      "name": "repeated",
+      "kind": "variable",
+      "scopes": [
+        "anonymous"
+      ],
+      "identifierRange": [
+        754,
+        762
+      ],
+      "declarationRange": [
+        750,
+        766
+      ]
+    }
+  ],
+  "diagnosticRanges": [],
+  "qualifiedNames": [
+    "Host",
+    "Host.outer",
+    "Host.outer(value:).inner",
+    "Host.outer(value:).local",
+    "Host.outer(value:).middle",
+    "Host.outer(value:).middle(_:).leaf",
+    "Host.outer(value:).Nested",
+    "Host.outer(value:).Nested.member",
+    "Host.outer(value:).Nested.member().body",
+    "Host.outer(value:).closure",
+    "Host.outer(value:).closure.captured",
+    "Host.outer",
+    "Host.outer(text:).inner",
+    "Host.outer",
+    "Host.outer(value:).inner",
+    "Host.init",
+    "Host.init(seed:).local",
+    "Host.subscript",
+    "Host.subscript(key:).local",
+    "Host",
+    "Host.repeat",
+    "Host.repeat(for:).café",
+    "Host.repeat(for:).café(😀:).é",
+    "Lifetime",
+    "Lifetime.deinit",
+    "Lifetime.deinit().local",
+    "anonymous",
+    "anonymous().repeated",
+    "anonymous().repeated"
+  ],
+  "callableNames": [
+    null,
+    "outer(value:)",
+    "inner()",
+    null,
+    "middle(_:)",
+    "leaf(flag:)",
+    null,
+    "member()",
+    null,
+    null,
+    null,
+    "outer(text:)",
+    "inner()",
+    "outer(value:)",
+    "inner()",
+    "init(seed:)",
+    null,
+    "subscript(key:)",
+    null,
+    null,
+    "repeat(for:)",
+    "café(😀:)",
+    null,
+    null,
+    "deinit()",
+    null,
+    "anonymous()",
+    null,
+    null
+  ],
+  "qualifiedCallableNames": [
+    null,
+    "Host.outer(value:)",
+    "Host.outer(value:).inner()",
+    null,
+    "Host.outer(value:).middle(_:)",
+    "Host.outer(value:).middle(_:).leaf(flag:)",
+    null,
+    "Host.outer(value:).Nested.member()",
+    null,
+    null,
+    null,
+    "Host.outer(text:)",
+    "Host.outer(text:).inner()",
+    "Host.outer(value:)",
+    "Host.outer(value:).inner()",
+    "Host.init(seed:)",
+    null,
+    "Host.subscript(key:)",
+    null,
+    null,
+    "Host.repeat(for:)",
+    "Host.repeat(for:).café(😀:)",
+    null,
+    null,
+    "Lifetime.deinit()",
+    null,
+    "anonymous()",
+    null,
+    null
+  ]
+}
