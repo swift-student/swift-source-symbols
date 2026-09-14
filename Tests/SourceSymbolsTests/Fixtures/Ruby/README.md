@@ -28,9 +28,14 @@ and reuses `Support/BackendContract.swift` for snapshot and range invariants.
 - `recovery.rb`, `missing.rb`, `incomplete.rb`: intentionally malformed inputs that
   preserve errors, zero-width missing tokens, header/body distinctions, and the
   pinned grammar's inability to reconstruct some unterminated declarations.
+- `headers.rb`: source-backed headers for methods, namespaces, and aliases;
+  unavailable constant/heredoc headers; multiline defaults and Unicode. Exact
+  source slices and offsets also run with CRLF copies.
+- `header-recovery.rb`: malformed namespace headers versus errors in their bodies.
 
-All eight valid fixtures passed `ruby -c` with Ruby 4.0.6 on 2026-09-14. The five
-recovery/missing/incomplete fixtures intentionally contain invalid syntax.
+The original eight valid fixtures and issue #15's `headers.rb` passed `ruby -c`
+with Ruby 4.0.6 on 2026-09-14. The recovery/missing/incomplete fixtures intentionally
+contain invalid syntax.
 The receiver-path and heredoc-recovery assertions also run with CRLF in-memory copies.
 This checks syntax, not runtime behavior or whole-version conformance.
 Preserve the original UTF-8 bytes and intentional CRLF. Do not format these files.

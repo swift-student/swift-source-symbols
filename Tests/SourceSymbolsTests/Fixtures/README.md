@@ -54,3 +54,13 @@ matching declarations and converting their positions does not suppress diagnosti
 
 The original Ruby corpus lives in [Ruby](Ruby/README.md), with separate language
 expectations and the same snapshot/range/matching contract helpers.
+
+Issue #15 adds `headers.swift`, covering source-backed headers across declaration
+kinds, nested default/attribute braces, multiline generics/effects, and Unicode.
+`DeclarationHeaderTests.swift` independently specifies exact header text and derives
+expected offsets from literal occurrences in the fixture, including CRLF copies.
+`header-comment-recovery.swift` is valid Swift whose computed-property accessor is
+disconnected by the pinned grammar after a block comment; diagnostics are retained.
+Both files pass Swift 6.4 frontend parsing. `header-groups.swift` intentionally
+includes a compiler-invalid multi-binding observer group accepted by Tree-sitter;
+its noncontiguous body-free header is unavailable. It also checks interior comments.

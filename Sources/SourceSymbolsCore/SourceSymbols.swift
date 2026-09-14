@@ -134,17 +134,28 @@ public struct Declaration: Sendable {
     /// Outer-to-inner lexical scope names, including extension scopes. These are not lookup aliases.
     public let enclosingScopes: [String]
     public let identifierRange: SourceRange
+    /// Exact source header, excluding implementation/accessor bodies under backend conventions.
+    /// Nil when a reliable contiguous header is unavailable. Independent of matching metadata.
+    public let headerRange: SourceRange?
     public let declarationRange: SourceRange
 
     public init(name: String, qualifiedName: String, kind: Kind, signature: CallableSignature? = nil,
                 callableName: String? = nil, qualifiedCallableName: String? = nil,
                 enclosingScopes: [String] = [], identifierRange: SourceRange,
-                declarationRange: SourceRange) throws
+                declarationRange: SourceRange, headerRange: SourceRange? = nil) throws
     {
         guard identifierRange.snapshotID == declarationRange.snapshotID,
               identifierRange.utf8Offsets.lowerBound >= declarationRange.utf8Offsets.lowerBound,
               identifierRange.utf8Offsets.upperBound <= declarationRange.utf8Offsets.upperBound
         else { throw ExtractionError.invalidRanges }
+        if let headerRange {
+            guard headerRange.snapshotID == declarationRange.snapshotID,
+                  headerRange.utf8Offsets.lowerBound >= declarationRange.utf8Offsets.lowerBound,
+                  headerRange.utf8Offsets.upperBound <= declarationRange.utf8Offsets.upperBound,
+                  identifierRange.utf8Offsets.lowerBound >= headerRange.utf8Offsets.lowerBound,
+                  identifierRange.utf8Offsets.upperBound <= headerRange.utf8Offsets.upperBound
+            else { throw ExtractionError.invalidRanges }
+        }
         self.name = name
         self.qualifiedName = qualifiedName
         self.kind = kind
@@ -153,6 +164,7 @@ public struct Declaration: Sendable {
         self.qualifiedCallableName = qualifiedCallableName
         self.enclosingScopes = enclosingScopes
         self.identifierRange = identifierRange
+        self.headerRange = headerRange
         self.declarationRange = declarationRange
     }
 }

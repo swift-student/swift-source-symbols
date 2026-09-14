@@ -60,6 +60,45 @@ callable bindings, closure parameters, and enum associated values. They add no
 declaration category, identifier range, or scope component. Query filters describe
 the target declaration's signature, never the enclosing callable's signature.
 
+## Source-backed declaration headers
+
+`headerRange` comes from a declaration's direct syntax children, stopping before
+`function_body`, `computed_property`, `willset_didset_block`,
+`protocol_property_requirements`, or the type/protocol/enum member body. It ends
+after the last non-trivia header child. Nested braces in attributes, parameter
+defaults, and stored initializers cannot become body boundaries. Attributes,
+modifiers, failability, generic syntax, and interior comments remain source text;
+the adapter does not format or reconstruct them from `CallableSignature`.
+
+Bodyless declarations use the complete declaration syntax. Stored initializers
+(including closures), aliases, associated types, and enum associated/raw values
+remain in headers. All names in a grouped declaration share its header. A group
+with another binding after an accessor has nil headers because the desired text
+would require disjoint ranges. Protocol accessor requirements are excluded just
+like implementation accessors. See [the API contract](API.md#source-backed-headers).
+
+Missing/error nodes in the header make the range unavailable; errors confined to
+the body preserve the header. No declaration/header is synthesized when recovery
+leaves only loose tokens. `header-comment-recovery.swift` records another valid
+source grammar gap: a block comment between a computed property's type and opening
+brace disconnects its accessor syntax from the property. The recovered property
+still supplies `var computed: Int`; the parser diagnostics remain visible. A header
+is evidence of the recovered syntax boundary, not of Swift compiler acceptance.
+
+Issue #15 adds `headers.swift` (overloads, multiline generics, typed throws,
+attributes/defaults with braces, properties, type/extension headers, grouped enum
+cases, bodyless declarations, and Unicode) and `header-groups.swift` (interior
+comments and a deliberately invalid observer group). Exact source-authored slices
+and offsets are checked in `DeclarationHeaderTests.swift`, including LF/CRLF copies,
+snapshot identity, unknown headers, and independent matching metadata. The compiled
+example prints two distinct overload headers with no consumer text parsing.
+
+Local `make check` passed on 2026-09-14 with Swift 6.4 on macOS: 64 Swift Testing
+tests, builds/example, zero lint violations, and clean formatting. The main header
+fixture and comment regression were accepted by Swift's frontend parser; the
+observer group intentionally produces a compiler diagnostic despite a clean
+Tree-sitter parse. This does not add backend or platform support claims.
+
 ## Corpus and observed behavior
 
 The permanent [fixtures](../Tests/SourceSymbolsTests/Fixtures) are original test
