@@ -1,7 +1,7 @@
 # API contract
 
 SourceSymbols operates on immutable in-memory `SourceSnapshot` values with an
-explicit `SourceLanguage` enum containing `.swift` and `.ruby`. Each newly
+explicit `SourceLanguage` enum containing `.swift`, `.ruby`, and `.kotlin`. Each newly
 initialized snapshot has a unique identity; copies retain that identity.
 The package has one public product and consumer import, `SourceSymbols`, bundling
 the available backends. Shared models and matching live in the parser-independent
@@ -65,9 +65,9 @@ Position conversion does not inspect or suppress extraction diagnostics.
 
 ## Extraction and ranges
 
-`TreeSitterSwiftExtractor` and `TreeSitterRubyExtractor` implement the synchronous,
+`TreeSitterSwiftExtractor`, `TreeSitterRubyExtractor`, and `TreeSitterKotlinExtractor` implement the synchronous,
 throwing, `Sendable` `DeclarationExtractor` protocol. They parse text directly as
-UTF-8 using Tree-sitter Swift 0.7.3 or Ruby 0.23.1 and runtime 0.25.10.
+UTF-8 using Tree-sitter Swift 0.7.3, Ruby 0.23.1, or Kotlin 1.1.0 and runtime 0.25.10.
 Each extractor accepts only its corresponding language. Each call creates and disposes its own
 parser/tree; it may be called concurrently. No backend pointer escapes in a result.
 The input length is checked against Tree-sitter's 32-bit byte limit before parsing.
@@ -281,6 +281,28 @@ contributes no token to the method's range, which begins at `def`. See the
 [Ruby backend contract](RUBY_BACKEND.md) for exact qualification examples, recovery,
 coverage, and omitted dynamic declarations.
 
+## Kotlin extraction and lookup
+
+Use `SourceSnapshot(text: sourceText, language: .kotlin)` with
+`TreeSitterKotlinExtractor`. Package-prefixed lookup paths use dots, such as
+`shop.Cart.add`. Extension receiver syntax is included in qualified names:
+`sample.String.render` and `sample.Int.render`. Backticks remain in identifier
+ranges and are removed from lookup names. There are no extra callable aliases;
+overloads are narrowed using exact parameter-type or signature filters.
+
+Kotlin extracts types, objects/companions, functions/methods, properties/local
+variables, primary-constructor property parameters, secondary constructors, init
+blocks, enum entries, and type aliases. Primary constructor metadata is attached
+to the class declaration. Parameters retain names as argument labels, annotation
+syntax, varargs, and defaults; signatures also retain generics, constraints,
+explicit return types, and `suspend`.
+
+Headers exclude class/function bodies and accessors, retaining stored/delegated
+initializers, defaults, and constructor delegation syntax. Recovered header errors
+make metadata unavailable; body errors preserve sound headers. See the
+[Kotlin backend contract](KOTLIN_BACKEND.md) for exact scope/header conventions,
+independently tested coverage, and pinned-grammar recovery limitations.
+
 ## Diagnostics and limitations
 
 Tree-sitter `ERROR` and missing-token nodes produce error-severity `ParseDiagnostic`
@@ -295,11 +317,11 @@ compiler/type-checker diagnostics, and known grammar false positives are preserv
 Unsupported languages throw `ExtractionError.unsupportedLanguage`; fatal backend
 setup/parse failures throw `TreeSitterExtractionError`. A clean parser result does
 not guarantee that every declaration category is extracted. See the tested syntax
-and known gaps in the [Swift backend decision](SWIFT_BACKEND.md) and
-[Ruby backend contract](RUBY_BACKEND.md).
+and known gaps in the [Swift backend decision](SWIFT_BACKEND.md),
+[Ruby backend contract](RUBY_BACKEND.md), and [Kotlin backend contract](KOTLIN_BACKEND.md).
 
 The package uses Swift tools 6.0, Swift 6 language mode, and a macOS 13 deployment
-minimum. Both backends have been locally validated with Swift 6.4 on macOS 26.6.2
+minimum. All three backends have been locally validated with Swift 6.4 on macOS 26.6.2
 (arm64). The configured Swift 6.0/6.2 CI matrix still needs to run against these
 changes; macOS 13 runtime, iOS, and Linux are not validated. SourceKitten execution
 and a SwiftSyntax comparison were intentionally deferred in the issue #6 discussion.

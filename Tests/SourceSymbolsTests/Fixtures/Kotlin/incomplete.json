@@ -1,0 +1,26 @@
+{
+  "declarations": [
+    {
+      "name": "retained",
+      "kind": "property",
+      "scopes": [],
+      "identifierRange": [
+        57,
+        65
+      ],
+      "declarationRange": [
+        53,
+        69
+      ]
+    }
+  ],
+  "diagnosticRanges": [
+    [
+      0,
+      69
+    ]
+  ],
+  "qualifiedNames": [
+    "retained"
+  ]
+}

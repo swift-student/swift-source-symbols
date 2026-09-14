@@ -18,8 +18,12 @@ let package = Package(
                 exclude: ["LICENSE", "PROVENANCE.md", "SHA256SUMS"],
                 sources: ["src/parser.c", "src/scanner.c"], publicHeadersPath: "include",
                 cSettings: [.headerSearchPath("src")]),
+        .target(name: "TreeSitterKotlinGrammar", path: "Vendor/tree-sitter-kotlin",
+                exclude: ["LICENSE", "PROVENANCE.md", "SHA256SUMS"],
+                sources: ["src/parser.c", "src/scanner.c"], publicHeadersPath: "include",
+                cSettings: [.headerSearchPath("src")]),
         .target(name: "SourceSymbols", dependencies: [
-            "SourceSymbolsCore", "TreeSitterSwiftGrammar", "TreeSitterRubyGrammar", .product(
+            "SourceSymbolsCore", "TreeSitterSwiftGrammar", "TreeSitterRubyGrammar", "TreeSitterKotlinGrammar", .product(
                 name: "TreeSitter",
                 package: "tree-sitter"
             ),

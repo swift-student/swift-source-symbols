@@ -3,7 +3,7 @@
 SourceSymbols is one library product for projects containing multiple languages.
 Consumers use `import SourceSymbols`; the product bundles every implemented backend.
 There are no per-language product choices or external backend registration system.
-Swift and Ruby are implemented; each has an explicit extractor.
+Swift, Ruby, and Kotlin are implemented; each has an explicit extractor.
 
 ## Internal boundaries
 
@@ -12,13 +12,13 @@ Swift and Ruby are implemented; each has an explicit extractor.
   depends only on Foundation and has no parser dependency.
 - `Sources/SourceSymbols/Exports.swift` exposes the shared types through explicit
   public aliases, keeping the consumer import independent of the internal split.
-- `Sources/SourceSymbols/Swift` and `Sources/SourceSymbols/Ruby` own their grammar
-  interpretation, qualification, callable spellings, scope rules, trivia rules,
+- `Sources/SourceSymbols/Swift`, `Sources/SourceSymbols/Ruby`, and
+  `Sources/SourceSymbols/Kotlin` own their grammar interpretation, qualification, callable spellings, scope rules, trivia rules,
   and error recovery. Ruby also associates delayed heredoc bodies with their owners.
 - `Sources/SourceSymbols/TreeSitter` shares only parser/tree ownership and borrowed
-  node access. Both backends use the same runtime without exposing backend handles.
-- `Vendor/tree-sitter-swift` and `Vendor/tree-sitter-ruby` are separate C targets
-  with pinned provenance. Vendored/generated code never mixes with handwritten Swift.
+  node access. All backends use the same runtime without exposing backend handles.
+- `Vendor/tree-sitter-swift`, `Vendor/tree-sitter-ruby`, and `Vendor/tree-sitter-kotlin`
+  are separate C targets with pinned provenance. Vendored/generated code never mixes with handwritten Swift.
 
 The core cannot depend on a language adapter: the adapter target depends on the
 core. All extraction stays synchronous, Sendable, and in memory. No parser handle

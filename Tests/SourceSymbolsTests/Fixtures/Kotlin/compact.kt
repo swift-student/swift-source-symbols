@@ -1,0 +1,1 @@
+class Compact { fun run() {} }

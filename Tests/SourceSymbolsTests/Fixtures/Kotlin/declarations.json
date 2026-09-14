@@ -1,0 +1,433 @@
+{
+  "declarations": [
+    {
+      "name": "Cart",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        78,
+        82
+      ],
+      "declarationRange": [
+        67,
+        562
+      ]
+    },
+    {
+      "name": "item",
+      "kind": "property",
+      "scopes": [
+        "Cart"
+      ],
+      "identifierRange": [
+        90,
+        94
+      ],
+      "declarationRange": [
+        86,
+        97
+      ]
+    },
+    {
+      "name": "count",
+      "kind": "property",
+      "scopes": [
+        "Cart"
+      ],
+      "identifierRange": [
+        111,
+        116
+      ],
+      "declarationRange": [
+        99,
+        125
+      ]
+    },
+    {
+      "name": "constructor",
+      "kind": "initializer",
+      "scopes": [
+        "Cart"
+      ],
+      "identifierRange": [
+        147,
+        158
+      ],
+      "declarationRange": [
+        147,
+        216
+      ]
+    },
+    {
+      "name": "ready",
+      "kind": "variable",
+      "scopes": [
+        "Cart",
+        "constructor"
+      ],
+      "identifierRange": [
+        198,
+        203
+      ],
+      "declarationRange": [
+        194,
+        210
+      ]
+    },
+    {
+      "name": "init",
+      "kind": "initializer",
+      "scopes": [
+        "Cart"
+      ],
+      "identifierRange": [
+        221,
+        225
+      ],
+      "declarationRange": [
+        221,
+        260
+      ]
+    },
+    {
+      "name": "checked",
+      "kind": "variable",
+      "scopes": [
+        "Cart",
+        "init"
+      ],
+      "identifierRange": [
+        240,
+        247
+      ],
+      "declarationRange": [
+        236,
+        254
+      ]
+    },
+    {
+      "name": "add",
+      "kind": "method",
+      "scopes": [
+        "Cart"
+      ],
+      "identifierRange": [
+        269,
+        272
+      ],
+      "declarationRange": [
+        265,
+        320
+      ]
+    },
+    {
+      "name": "local",
+      "kind": "function",
+      "scopes": [
+        "Cart",
+        "add"
+      ],
+      "identifierRange": [
+        299,
+        304
+      ],
+      "declarationRange": [
+        295,
+        314
+      ]
+    },
+    {
+      "name": "add",
+      "kind": "method",
+      "scopes": [
+        "Cart"
+      ],
+      "identifierRange": [
+        329,
+        332
+      ],
+      "declarationRange": [
+        325,
+        355
+      ]
+    },
+    {
+      "name": "total",
+      "kind": "property",
+      "scopes": [
+        "Cart"
+      ],
+      "identifierRange": [
+        364,
+        369
+      ],
+      "declarationRange": [
+        360,
+        457
+      ]
+    },
+    {
+      "name": "cached",
+      "kind": "variable",
+      "scopes": [
+        "Cart",
+        "total"
+      ],
+      "identifierRange": [
+        407,
+        413
+      ],
+      "declarationRange": [
+        403,
+        421
+      ]
+    },
+    {
+      "name": "Companion",
+      "kind": "type",
+      "scopes": [
+        "Cart"
+      ],
+      "identifierRange": [
+        472,
+        478
+      ],
+      "declarationRange": [
+        462,
+        511
+      ]
+    },
+    {
+      "name": "create",
+      "kind": "method",
+      "scopes": [
+        "Cart",
+        "Companion"
+      ],
+      "identifierRange": [
+        493,
+        499
+      ],
+      "declarationRange": [
+        489,
+        505
+      ]
+    },
+    {
+      "name": "Named",
+      "kind": "type",
+      "scopes": [
+        "Cart"
+      ],
+      "identifierRange": [
+        523,
+        528
+      ],
+      "declarationRange": [
+        516,
+        560
+      ]
+    },
+    {
+      "name": "version",
+      "kind": "property",
+      "scopes": [
+        "Cart",
+        "Named"
+      ],
+      "identifierRange": [
+        543,
+        550
+      ],
+      "declarationRange": [
+        539,
+        554
+      ]
+    },
+    {
+      "name": "Reader",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        573,
+        579
+      ],
+      "declarationRange": [
+        563,
+        606
+      ]
+    },
+    {
+      "name": "read",
+      "kind": "method",
+      "scopes": [
+        "Reader"
+      ],
+      "identifierRange": [
+        590,
+        594
+      ],
+      "declarationRange": [
+        586,
+        604
+      ]
+    },
+    {
+      "name": "State",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        618,
+        623
+      ],
+      "declarationRange": [
+        607,
+        681
+      ]
+    },
+    {
+      "name": "OPEN",
+      "kind": "enumCase",
+      "scopes": [
+        "State"
+      ],
+      "identifierRange": [
+        630,
+        634
+      ],
+      "declarationRange": [
+        630,
+        634
+      ]
+    },
+    {
+      "name": "CLOSED",
+      "kind": "enumCase",
+      "scopes": [
+        "State"
+      ],
+      "identifierRange": [
+        640,
+        646
+      ],
+      "declarationRange": [
+        640,
+        646
+      ]
+    },
+    {
+      "name": "isOpen",
+      "kind": "method",
+      "scopes": [
+        "State"
+      ],
+      "identifierRange": [
+        656,
+        662
+      ],
+      "declarationRange": [
+        652,
+        679
+      ]
+    },
+    {
+      "name": "Callback",
+      "kind": "typeAlias",
+      "scopes": [],
+      "identifierRange": [
+        692,
+        700
+      ],
+      "declarationRange": [
+        682,
+        717
+      ]
+    },
+    {
+      "name": "top",
+      "kind": "property",
+      "scopes": [],
+      "identifierRange": [
+        722,
+        725
+      ],
+      "declarationRange": [
+        718,
+        729
+      ]
+    },
+    {
+      "name": "run",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        734,
+        737
+      ],
+      "declarationRange": [
+        730,
+        781
+      ]
+    },
+    {
+      "name": "first",
+      "kind": "variable",
+      "scopes": [
+        "run"
+      ],
+      "identifierRange": [
+        751,
+        756
+      ],
+      "declarationRange": [
+        746,
+        779
+      ]
+    },
+    {
+      "name": "second",
+      "kind": "variable",
+      "scopes": [
+        "run"
+      ],
+      "identifierRange": [
+        761,
+        767
+      ],
+      "declarationRange": [
+        746,
+        779
+      ]
+    }
+  ],
+  "diagnosticRanges": [],
+  "qualifiedNames": [
+    "shop.Cart",
+    "shop.Cart.item",
+    "shop.Cart.count",
+    "shop.Cart.constructor",
+    "shop.Cart.constructor.ready",
+    "shop.Cart.init",
+    "shop.Cart.init.checked",
+    "shop.Cart.add",
+    "shop.Cart.add.local",
+    "shop.Cart.add",
+    "shop.Cart.total",
+    "shop.Cart.total.cached",
+    "shop.Cart.Companion",
+    "shop.Cart.Companion.create",
+    "shop.Cart.Named",
+    "shop.Cart.Named.version",
+    "shop.Reader",
+    "shop.Reader.read",
+    "shop.State",
+    "shop.State.OPEN",
+    "shop.State.CLOSED",
+    "shop.State.isOpen",
+    "shop.Callback",
+    "shop.top",
+    "shop.run",
+    "shop.run.first",
+    "shop.run.second"
+  ]
+}
