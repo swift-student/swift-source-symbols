@@ -8,10 +8,10 @@ Install SwiftLint **0.65.1** and SwiftFormat **0.62.1** from their upstream tagg
 releases, and place their executables on PATH. `make tools` verifies exact versions;
 CI installs these same releases with verified SHA-256 checksums. Tool installation is maintainer setup and
 is not required by library consumers. The Tree-sitter runtime dependency is pinned
-in Package.swift; the grammars are vendored with [Swift provenance](Vendor/tree-sitter-swift/PROVENANCE.md),
-[Ruby provenance](Vendor/tree-sitter-ruby/PROVENANCE.md),
-[Kotlin provenance](Vendor/tree-sitter-kotlin/PROVENANCE.md), and
-[TypeScript/TSX provenance](Vendor/tree-sitter-typescript/PROVENANCE.md).
+in Package.swift. Ruby, Kotlin, and TypeScript/TSX use upstream SwiftPM packages;
+Swift's generated release sources live in our separate `tree-sitter-swift-spm`
+package. See [grammar dependencies](docs/GRAMMARS.md) for versions, provenance,
+licenses, and the update workflow.
 
 - `make build`: compile the library and example.
 - `make test`: run Swift Testing contract tests.

@@ -1,4 +1,4 @@
-import TreeSitterKotlinGrammar
+import TreeSitterKotlin
 
 /// Extracts per-file Kotlin syntax using Tree-sitter Kotlin 1.1.0 and runtime 0.25.10.
 /// Lookup paths are syntactic, without import resolution or type checking.

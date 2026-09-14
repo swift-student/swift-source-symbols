@@ -2,8 +2,9 @@
 
 `TreeSitterKotlinExtractor` accepts `.kotlin` snapshots and parses UTF-8 in memory.
 It uses [tree-sitter-grammars/tree-sitter-kotlin 1.1.0](https://github.com/tree-sitter-grammars/tree-sitter-kotlin/releases/tag/v1.1.0)
-(language ABI 14) with the existing Tree-sitter runtime 0.25.10. The C grammar is
-vendored separately with its [license, commit, and checksums](../Vendor/tree-sitter-kotlin/PROVENANCE.md).
+(language ABI 14) with the existing Tree-sitter runtime 0.25.10. The C grammar comes
+from its version-pinned upstream SwiftPM package; see its
+[license and commit](GRAMMARS.md).
 Consumers need neither Kotlin/JVM nor a parser generator. Each extraction owns its
 parser and tree; the extractor is Sendable and can be reused concurrently.
 

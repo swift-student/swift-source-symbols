@@ -16,12 +16,13 @@ The runtime is [Tree-sitter v0.25.10](https://github.com/tree-sitter/tree-sitter
 pinned exactly in Package.swift and recorded in Package.resolved. The grammar is
 [tree-sitter-swift 0.7.3](https://github.com/alex-pinkus/tree-sitter-swift/releases/tag/0.7.3).
 Its Git tag omits the generated parser, so the release archive's generated C parser,
-scanner, and required headers are vendored without modification. The generated
-parser is approximately 20 MiB of source. Archive/file checksums, tag commit,
-upstream paths, license, and update instructions are in
-[PROVENANCE.md](../Vendor/tree-sitter-swift/PROVENANCE.md). Consumers need no parser
-generator or separate binary installation. No claim about consumer build cost or
-binary size is made without measurement.
+scanner, and required headers are packaged without modification in our separate
+[tree-sitter-swift-spm](https://github.com/swift-student/tree-sitter-swift-spm) repository.
+The generated parser is approximately 20 MiB of source. Archive/file checksums,
+tag commit, upstream paths, license, and update instructions are in that package's
+[provenance](https://github.com/swift-student/tree-sitter-swift-spm/blob/0.1.0/Vendor/tree-sitter-swift/PROVENANCE.md).
+SourceSymbols pins its package version; consumers need no parser generator or
+separate binary installation. See [grammar dependencies](GRAMMARS.md).
 
 The small Swift adapter calls the C runtime directly, reads UTF-8 offsets, and
 walks declaration nodes. It uses neither a Swift wrapper dependency nor Tree-sitter

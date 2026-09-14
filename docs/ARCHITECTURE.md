@@ -19,9 +19,10 @@ The TypeScript extractor selects its grammar from `.typescript` or `.tsx`.
   and error recovery. Ruby also associates delayed heredoc bodies with their owners.
 - `Sources/SourceSymbols/TreeSitter` shares only parser/tree ownership and borrowed
   node access. All backends use the same runtime without exposing backend handles.
-- `Vendor/tree-sitter-swift`, `Vendor/tree-sitter-ruby`, `Vendor/tree-sitter-kotlin`, and
-  `Vendor/tree-sitter-typescript` are separate C targets
-  with pinned provenance. Vendored/generated code never mixes with handwritten Swift.
+- Grammar C targets come from version-pinned SwiftPM dependencies. Ruby, Kotlin,
+  and TypeScript/TSX use upstream packages; Swift uses our source-only
+  `tree-sitter-swift-spm` package. Generated code stays in those packages, separate
+  from handwritten adapters. See [grammar dependencies](GRAMMARS.md).
 
 The core cannot depend on a language adapter: the adapter target depends on the
 core. All extraction stays synchronous, Sendable, and in memory. No parser handle

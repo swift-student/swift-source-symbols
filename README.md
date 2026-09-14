@@ -10,6 +10,10 @@ One `SourceSymbols` product bundles the implemented backends. Internally, a pars
 
 The initial Swift backend uses direct Tree-sitter syntax-node traversal. See the [backend decision](docs/SWIFT_BACKEND.md) for tested syntax, permanent grammar regressions, dependency provenance, and the deferred SourceKitten/SwiftSyntax comparisons.
 
+Grammar sources are fetched through pinned SwiftPM dependencies: upstream packages
+for Ruby, Kotlin, and TypeScript/TSX, and our separate Swift grammar package.
+See [grammar dependencies](docs/GRAMMARS.md) for provenance and updates.
+
 ## Setup backlog
 
 1. [Swift 6 package and public API](../../issues/1)

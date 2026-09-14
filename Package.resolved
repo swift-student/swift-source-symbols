@@ -1,5 +1,5 @@
 {
-  "originHash" : "e89159cec4bd86c3f877b9401d36d0aedf494d2a41191fd121a48f9e82321bdf",
+  "originHash" : "9c25b7f758ab06e58010f1c8a038754e0dbef40853313d9f6e60c1987bcf9942",
   "pins" : [
     {
       "identity" : "tree-sitter",
@@ -8,6 +8,42 @@
       "state" : {
         "revision" : "da6fe9beb4f7f67beb75914ca8e0d48ae48d6406",
         "version" : "0.25.10"
+      }
+    },
+    {
+      "identity" : "tree-sitter-kotlin",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tree-sitter-grammars/tree-sitter-kotlin",
+      "state" : {
+        "revision" : "77dd60ea0a9003ce062c9728a513ffe1aaff8c82",
+        "version" : "1.1.0"
+      }
+    },
+    {
+      "identity" : "tree-sitter-ruby",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tree-sitter/tree-sitter-ruby",
+      "state" : {
+        "revision" : "71bd32fb7607035768799732addba884a37a6210",
+        "version" : "0.23.1"
+      }
+    },
+    {
+      "identity" : "tree-sitter-swift-spm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swift-student/tree-sitter-swift-spm",
+      "state" : {
+        "revision" : "08aaa2537c108e8d6d0963744cdbdc180566856f",
+        "version" : "0.1.0"
+      }
+    },
+    {
+      "identity" : "tree-sitter-typescript",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tree-sitter/tree-sitter-typescript",
+      "state" : {
+        "revision" : "f975a621f4e7f532fe322e13c4f79495e0a7b2e7",
+        "version" : "0.23.2"
       }
     }
   ],
