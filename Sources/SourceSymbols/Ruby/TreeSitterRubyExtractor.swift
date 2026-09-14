@@ -29,7 +29,7 @@ private struct RubySyntaxExtraction {
 
     struct Work {
         let node: SyntaxNode
-        let context: Context
+        var context: Context
         var heredocs: [SyntaxNode] = []
     }
 
@@ -47,17 +47,25 @@ private struct RubySyntaxExtraction {
         var stack = [Work(node: root, context: Context())]
         while let work = stack.popLast() {
             let node = work.node
-            let children = node.children
-            recordDiagnostic(node, children: children)
-            let bodyContext = try extractDeclaration(node, context: work.context, trailingEnd: work.heredocs.last?.end)
-            stack.append(contentsOf: childWork(work, bodyContext: bodyContext).reversed())
+            let children = childWork(work)
+            recordDiagnostic(node, children: node.children)
+            let bodyContext = try extractDeclaration(node, context: work.context, children: children,
+                                                     trailingEnd: work.heredocs.last?.end)
+            let body = node.field("body")
+            let parameters = node.field("parameters")
+            for var child in children.reversed() {
+                let isBody = body?.offsets == child.node.offsets && body?.kind == child.node.kind
+                let isParameters = parameters?.offsets == child.node.offsets && parameters?.kind == child.node.kind
+                if isBody || isParameters {
+                    child.context = bodyContext
+                }
+                stack.append(child)
+            }
         }
         return try ExtractionResult(snapshot: snapshot, declarations: declarations, diagnostics: diagnostics)
     }
 
-    private func childWork(_ work: Work, bodyContext: Context) -> [Work] {
-        let body = work.node.field("body")
-        let parameters = work.node.field("parameters")
+    private func childWork(_ work: Work) -> [Work] {
         let nodes = work.node.children + work.heredocs
         let hasDelayedBodies = nodes.contains { $0.kind == "heredoc_body" }
         var children: [Work] = []
@@ -74,9 +82,7 @@ private struct RubySyntaxExtraction {
                 }
                 continue
             }
-            let isBody = body?.offsets == child.offsets && body?.kind == child.kind
-            let isParameters = parameters?.offsets == child.offsets && parameters?.kind == child.kind
-            children.append(Work(node: child, context: (isBody || isParameters) ? bodyContext : work.context))
+            children.append(Work(node: child, context: work.context))
             if hasDelayedBodies {
                 let count = pendingHeredocs(child)
                 if count > 0 {
@@ -114,18 +120,17 @@ private struct RubySyntaxExtraction {
         }
     }
 
-    private mutating func extractDeclaration(_ node: SyntaxNode, context: Context,
+    private mutating func extractDeclaration(_ node: SyntaxNode, context: Context, children: [Work],
                                              trailingEnd: Int?) throws -> Context
     {
         switch node.kind {
         case "class", "module":
-            guard let path = node.field("name"), let spelling = constantPath(path),
+            guard let path = node.field("name"), let names = constantPath(path, context: context),
                   let nameNode = path.kind == "constant" ? path : path.field("name") else { return context }
-            let qualified = context.qualify(spelling)
-            guard try append(node, identifier: nameNode, name: text(nameNode), qualified: qualified,
+            guard try append(node, identifier: nameNode, name: text(nameNode), qualified: names.qualified,
                              kind: .type, context: context, trailingEnd: trailingEnd) else { return context }
-            return Context(scopes: context.scopes + [spelling], namespace: qualified,
-                           instanceOwner: qualified, selfReceiver: qualified)
+            return Context(scopes: context.scopes + [names.spelling], namespace: names.qualified,
+                           instanceOwner: names.qualified, selfReceiver: names.qualified)
         case "singleton_class":
             guard let value = node.field("value"), !value.hasError, !value.isMissing else { return context }
             let owner = receiver(value, context: context)
@@ -136,13 +141,13 @@ private struct RubySyntaxExtraction {
             return Context(scopes: context.scopes + [name], namespace: qualified,
                            singletonOwner: owner, selfReceiver: owner + ".singleton_class")
         case "method", "singleton_method":
-            return try extractMethod(node, context: context, trailingEnd: trailingEnd)
+            return try extractMethod(node, context: context, children: children, trailingEnd: trailingEnd)
         case "assignment", "operator_assignment":
             if let left = node.field("left") {
                 for path in constantBindings(left) {
-                    guard let spelling = constantPath(path),
+                    guard let names = constantPath(path, context: context),
                           let nameNode = path.kind == "constant" ? path : path.field("name") else { continue }
-                    try append(node, identifier: nameNode, name: text(nameNode), qualified: context.qualify(spelling),
+                    try append(node, identifier: nameNode, name: text(nameNode), qualified: names.qualified,
                                kind: .variable, context: context, trailingEnd: trailingEnd)
                 }
             }
@@ -161,7 +166,9 @@ private struct RubySyntaxExtraction {
         }
     }
 
-    private mutating func extractMethod(_ node: SyntaxNode, context: Context, trailingEnd: Int?) throws -> Context {
+    private mutating func extractMethod(_ node: SyntaxNode, context: Context, children: [Work],
+                                        trailingEnd: Int?) throws -> Context
+    {
         guard let nameNode = node.field("name") else { return context }
         let name = text(nameNode)
         let qualified: String
@@ -171,7 +178,7 @@ private struct RubySyntaxExtraction {
         } else {
             qualified = methodName(name, context: context)
         }
-        let signature = callableSignature(node)
+        let signature = callableSignature(node, children: children)
         guard try append(node, identifier: nameNode, name: name, qualified: qualified,
                          kind: .method, signature: signature, context: context, trailingEnd: trailingEnd)
         else { return context }
@@ -197,16 +204,23 @@ private struct RubySyntaxExtraction {
         return true
     }
 
-    private func callableSignature(_ node: SyntaxNode) -> CallableSignature? {
+    private func callableSignature(_ node: SyntaxNode, children: [Work]) -> CallableSignature? {
         guard let name = node.field("name") else { return nil }
         let list = node.field("parameters")
         let headerEnd = list?.end ?? name.end
         let body = node.field("body")
-        for child in node.children where child.kind != "end" && !isTrivia(child) {
+        let closingParenthesis = list?.children.last { !isTrivia($0) }
+        let hasClosedParameters = closingParenthesis?.kind == ")" && closingParenthesis?.isMissing == false
+        for work in children where work.node.kind != "end" && !isTrivia(work.node) {
+            let child = work.node
             if body?.kind == child.kind, body?.offsets == child.offsets {
                 break
             }
-            if child.start > headerEnd {
+            if child.start >= headerEnd {
+                // Ruby permits a body immediately after a complete parenthesized parameter list.
+                if hasClosedParameters {
+                    break
+                }
                 // A line break, semicolon, or endless-body '=' separates a sound header from body recovery.
                 if bytes[headerEnd ..< child.start].contains(where: { [10, 13, 59, 61].contains($0) }) {
                     break
@@ -215,7 +229,8 @@ private struct RubySyntaxExtraction {
                     break
                 }
             }
-            if child.hasError || child.isMissing {
+            // Delayed default expressions are header syntax even when their bodies lie after `end`.
+            if child.hasError || child.isMissing || work.heredocs.contains(where: \.hasError) {
                 return nil
             }
         }
@@ -266,29 +281,35 @@ private struct RubySyntaxExtraction {
         return node.children.flatMap(constantBindings)
     }
 
-    private func constantPath(_ node: SyntaxNode) -> String? {
+    private func constantPath(_ node: SyntaxNode, context: Context) -> (spelling: String, qualified: String)? {
         guard !node.hasError, !node.isMissing else { return nil }
         if node.kind == "constant" {
-            return text(node)
+            let spelling = text(node)
+            return (spelling, context.qualify(spelling))
         }
         guard node.kind == "scope_resolution", let name = node.field("name") else { return nil }
         if let scope = node.field("scope") {
-            guard let prefix = constantPath(scope) else { return nil }
-            return prefix + "::" + text(name)
+            let prefix = constantPath(scope, context: context)
+                ?? (receiverSpelling(scope), receiver(scope, context: context))
+            return (prefix.spelling + "::" + text(name), prefix.qualified + "::" + text(name))
         }
-        return "::" + text(name)
+        let spelling = "::" + text(name)
+        return (spelling, spelling)
     }
 
     private func receiver(_ node: SyntaxNode, context: Context) -> String {
         if node.kind == "self" {
             return context.selfReceiver
         }
-        if let path = constantPath(node) {
-            return context.qualify(path)
+        if let path = constantPath(node, context: context) {
+            return path.qualified
         }
         // Keep arbitrary receiver expressions explicit; they have no statically known identity.
-        let spelling = node.children.isEmpty ? text(node) : "(" + text(node) + ")"
-        return context.qualify(spelling)
+        return context.qualify(receiverSpelling(node))
+    }
+
+    private func receiverSpelling(_ node: SyntaxNode) -> String {
+        node.children.isEmpty ? text(node) : "(" + text(node) + ")"
     }
 
     private func isTrivia(_ node: SyntaxNode) -> Bool {

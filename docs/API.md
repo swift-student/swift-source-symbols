@@ -128,6 +128,9 @@ Namespace paths use `::`, instance methods use `#`, and singleton methods use `.
 from these lookup strings. Absolute paths retain leading `::`. Constant lookup,
 visibility, and receiver dispatch are not evaluated. Ruby supplies no extra callable
 aliases; queries use the base names with optional structured signature filters.
+Receiver-rooted constant paths use the same conventions as method receivers:
+inside `Cart`, `self::Nested` qualifies as `Cart::Nested` while retaining
+`self::Nested` as the class or module's lexical scope component.
 
 Ruby parameter annotations are nil. Positional/defaulted, keyword, rest, keyword
 rest, and block parameters retain names, passing styles, and default presence.

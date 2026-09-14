@@ -17,13 +17,21 @@ and reuses `Support/BackendContract.swift` for snapshot and range invariants.
   singleton nesting, visibility wrappers, comments, literals, heredocs, and `__END__`.
 - `heredocs.rb`: delayed and multiple bodies, interpolation scope, default parameters,
   and an intervening statement on the opening line.
+- `receiver-paths.rb`: receiver-rooted constant assignments, classes, and modules,
+  preserving `self::` lexical scopes and qualification inside singleton bodies.
+- `heredoc-recovery.rb`: intentionally malformed heredoc defaults and method bodies,
+  including multiple delayed bodies belonging to different parts of one method.
+- `adjacent-body-recovery.rb`: body errors immediately after closed parameter lists,
+  with valid-body, damaged-parameter, and missing-parenthesis controls.
 - `unicode-lf.rb` / `unicode-crlf.rb`: exact newline counterparts containing emoji,
   an accented module name, a decomposed method name, and a keyword parameter.
 - `recovery.rb`, `missing.rb`, `incomplete.rb`: intentionally malformed inputs that
   preserve errors, zero-width missing tokens, header/body distinctions, and the
   pinned grammar's inability to reconstruct some unterminated declarations.
 
-All fixtures except the three malformed inputs passed `ruby -c` with Ruby 4.0.6 on
-2026-09-13. This checks syntax, not runtime behavior or whole-version conformance.
+All eight valid fixtures passed `ruby -c` with Ruby 4.0.6 on 2026-09-14. The five
+recovery/missing/incomplete fixtures intentionally contain invalid syntax.
+The receiver-path and heredoc-recovery assertions also run with CRLF in-memory copies.
+This checks syntax, not runtime behavior or whole-version conformance.
 Preserve the original UTF-8 bytes and intentional CRLF. Do not format these files.
 See [the backend contract](../../../../docs/RUBY_BACKEND.md) for coverage and limits.

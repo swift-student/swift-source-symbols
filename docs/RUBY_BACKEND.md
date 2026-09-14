@@ -51,6 +51,13 @@ receiver. Anonymous blocks and control flow add no named scope. Methods within
 constant initializers retain the surrounding scope, without inferring a type from
 `Class.new` or `Module.new` calls.
 
+Constant paths use the same receiver rules. Inside `Host`, `self::VALUE` qualifies
+as `Host::VALUE`, and `class self::Nested` introduces `Host::Nested` with methods
+such as `Host::Nested#run`. Its lexical scope component remains `self::Nested`.
+Inside `class << self`, a `self::` path uses the additional singleton level.
+Other receiver roots retain their expression spelling: `class holder::Nested`
+introduces `holder::Nested` at the top level and scopes its methods accordingly.
+
 Reopened classes, branches, repeated definitions, and alias candidates remain
 separate. Extraction never selects Ruby's eventual runtime definition. Constant
 assignments, including grouped/destructured and operator assignments, are syntactic
@@ -81,12 +88,15 @@ line. Results visit owners before descendants, then sibling statements; attached
 heredoc interpolation declarations precede the owner's following siblings.
 
 Error and missing-token diagnostics are preserved, including overlapping and
-zero-width ranges. A sound header survives an error in its body, while damaged
-headers lose their signature. Only recognizable declaration nodes with healthy
-names are extracted. The pinned grammar can collapse an unterminated class or
-method into `ERROR`; tokens that no longer form a declaration node are not rebuilt
-by a second parser. Surviving descendants then use the nearest recoverable lexical
-scope. `incomplete.rb` permanently records this limit.
+zero-width ranges. Damaged headers lose their signature. A sound header survives
+an error in its body, including a body starting immediately after a closed
+parameter list. Errors in delayed heredoc defaults invalidate the signature even
+when their bodies follow the method's `end`; errors in body-owned heredocs preserve
+a sound header. Only recognizable declaration nodes with healthy names are
+extracted. The pinned grammar can collapse an unterminated class or method into
+`ERROR`; tokens that no longer form a declaration node are not rebuilt by a second
+parser. Surviving descendants then use the nearest recoverable lexical scope.
+`incomplete.rb` permanently records this limit.
 
 No methods are synthesized from `attr_reader`, `define_method`, `alias_method`,
 `module_function`, `eval`, or other dynamic calls. No RBS/Sorbet annotation binding,

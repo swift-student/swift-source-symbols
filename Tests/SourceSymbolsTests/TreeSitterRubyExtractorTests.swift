@@ -228,3 +228,83 @@ func rubyUnicodeBytesRemainSnapshotBound(name: String) throws {
     #expect(result.diagnostics.map { $0.range?.utf8Offsets } == [7 ..< 7])
     try expectSnapshotContract(result, from: snapshot)
 }
+
+@Test(arguments: ["\n", "\r\n"])
+func rubyReceiverQualifiedConstantPathsPreserveDeclarationsAndScopes(newline: String) throws {
+    let fixture = try rubyFixture("receiver-paths")
+    let snapshot = SourceSnapshot(text: fixture.text.replacingOccurrences(of: "\n", with: newline), language: .ruby)
+    let result = try TreeSitterRubyExtractor().extract(from: snapshot)
+    #expect(result.diagnostics.isEmpty)
+    #expect(result.declarations.map(\.qualifiedName) == [
+        "Host", "Host::VALUE", "Host::Nested", "Host::Nested#run", "Host::Helpers", "Host::Helpers#help",
+        "Host::Nested.build", "Host::<< self", "Host.singleton_class::META", "Host.singleton_class::Deep",
+        "Host.singleton_class::Deep#run", "holder::VALUE", "holder::Nested", "holder::Nested#run",
+        "holder::Tools", "holder::Tools#run",
+    ])
+    let runs = rubyCandidates("run", in: result)
+    #expect(runs.map(\.enclosingScopes) == [
+        ["Host", "self::Nested"], ["Host", "<< self", "self::Deep"], ["holder::Nested"], ["holder::Tools"],
+    ])
+    #expect(runs.allSatisfy { snapshot.text(in: $0.declarationRange) == "def run; end" })
+    #expect(runs.allSatisfy { snapshot.text(in: $0.identifierRange) == "run" })
+    let nested = try #require(rubyCandidates("Nested", in: result).first)
+    #expect(snapshot.text(in: nested.declarationRange) == "class self::Nested\(newline)    def run; end\(newline)  end")
+    #expect(snapshot.text(in: nested.identifierRange) == "Nested")
+    expectMatches(.init(name: .qualified("Host#run")), in: result, identifierOffsets: [])
+    try expectMatches(.init(name: .qualified("Host::Nested#run")), in: result,
+                      identifierOffsets: [#require(runs.first).identifierRange.utf8Offsets])
+    try expectSnapshotContract(result, from: snapshot)
+}
+
+@Test(arguments: ["\n", "\r\n"])
+func rubyDelayedHeredocErrorsRespectHeaderOwnership(newline: String) throws {
+    let fixture = try rubyFixture("heredoc-recovery")
+    let snapshot = SourceSnapshot(text: fixture.text.replacingOccurrences(of: "\n", with: newline), language: .ruby)
+    let result = try TreeSitterRubyExtractor().extract(from: snapshot)
+    #expect(result.declarations.map(\.name) == [
+        "closed_default", "endless_default", "multiline_default", "body_only", "valid_default_bad_body",
+        "bad_default_valid_body", "second_default",
+    ])
+    #expect(!result.diagnostics.isEmpty)
+    for name in ["closed_default", "endless_default", "multiline_default", "bad_default_valid_body", "second_default"] {
+        let method = try #require(rubyCandidates(name, in: result).first)
+        #expect(method.signature == nil)
+        expectMatches(.init(name: .short(name)), in: result, identifierOffsets: [method.identifierRange.utf8Offsets])
+        expectMatches(.init(name: .short(name), parameterTypes: [nil]), in: result, identifierOffsets: [])
+        expectMatches(.init(name: .short(name), parameterTypes: [nil, nil]), in: result, identifierOffsets: [])
+    }
+    for name in ["body_only", "valid_default_bad_body"] {
+        let method = try #require(rubyCandidates(name, in: result).first)
+        #expect(method.signature == .init(parameters: [.init(name: "x", hasDefaultValue: name != "body_only")]))
+        expectMatches(.init(name: .short(name), parameterTypes: [nil]), in: result,
+                      identifierOffsets: [method.identifierRange.utf8Offsets])
+    }
+    let closed = try #require(rubyCandidates("closed_default", in: result).first)
+    #expect(snapshot.text(in: closed.declarationRange)
+        == "def closed_default(x = <<~TEXT); end\(newline)  #{ @ }\(newline)TEXT")
+    try expectSnapshotContract(result, from: snapshot)
+}
+
+@Test func rubyAdjacentBodyErrorsRetainClosedParameterLists() throws {
+    let snapshot = try rubyFixture("adjacent-body-recovery")
+    let result = try TreeSitterRubyExtractor().extract(from: snapshot)
+    #expect(result.declarations.map(\.name) == [
+        "healthy", "adjacent", "adjacent_empty", "adjacent_singleton", "broken_parameter", "missing_parenthesis",
+    ])
+    #expect(!result.diagnostics.isEmpty)
+    for name in ["healthy", "adjacent", "adjacent_empty", "adjacent_singleton"] {
+        let method = try #require(rubyCandidates(name, in: result).first)
+        let parameters: [CallableSignature.Parameter] = name == "adjacent_empty" ? [] : [.init(name: "x")]
+        #expect(method.signature == .init(parameters: parameters))
+        expectMatches(.init(name: .short(name), parameterTypes: parameters.map(\.typeSyntax)), in: result,
+                      identifierOffsets: [method.identifierRange.utf8Offsets])
+    }
+    for name in ["broken_parameter", "missing_parenthesis"] {
+        let method = try #require(rubyCandidates(name, in: result).first)
+        #expect(method.signature == nil)
+        expectMatches(.init(name: .short(name), parameterTypes: [nil]), in: result, identifierOffsets: [])
+    }
+    let adjacent = try #require(rubyCandidates("adjacent", in: result).first)
+    #expect(snapshot.text(in: adjacent.declarationRange) == "def adjacent(x) @; end")
+    try expectSnapshotContract(result, from: snapshot)
+}
