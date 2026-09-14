@@ -391,5 +391,34 @@
       ]
     }
   ],
-  "diagnosticRanges": []
+  "diagnosticRanges": [],
+  "qualifiedNames": [
+    "Store",
+    "Store.count",
+    "Store.title",
+    "Store.enabled",
+    "Store.run",
+    "Store.run",
+    "Store.run",
+    "Store.run",
+    "Store.Nested",
+    "Store.Nested.run",
+    "Store.init",
+    "Store.subscript",
+    "Store.Nested",
+    "Store.Nested.extra",
+    "Runnable",
+    "Runnable.Output",
+    "Runnable.value",
+    "Runnable.run",
+    "Count",
+    "State",
+    "State.idle",
+    "State.ready",
+    "left",
+    "right",
+    "outer",
+    "outer().local",
+    "outer().inner"
+  ]
 }

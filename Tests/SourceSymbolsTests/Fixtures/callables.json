@@ -232,5 +232,24 @@
       ]
     }
   ],
-  "diagnosticRanges": []
+  "diagnosticRanges": [],
+  "qualifiedNames": [
+    "convert",
+    "gather",
+    "choose",
+    "choose",
+    "identity",
+    "identity",
+    "typed",
+    "call",
+    "pair",
+    "qualified",
+    "Number",
+    "Number.+",
+    "Number.==",
+    "Number.init",
+    "Number.subscript",
+    "Lifetime",
+    "Lifetime.deinit"
+  ]
 }

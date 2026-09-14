@@ -87,5 +87,13 @@
       ]
     }
   ],
-  "diagnosticRanges": []
+  "diagnosticRanges": [],
+  "qualifiedNames": [
+    "Café",
+    "Café.😀",
+    "Café.repeat",
+    "Café.é",
+    "Café",
+    "Café.résumé"
+  ]
 }

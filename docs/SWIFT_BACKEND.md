@@ -7,6 +7,8 @@ regressions, and defer both the executable SourceKitten baseline and the
 SwiftParser/SwiftSyntax comparison. This is not a comparative claim that Tree-sitter
 is more correct than either alternative, nor a claim of SourceKitten parity.
 Revisit the deferred comparison if a grammar gap prevents useful navigation.
+Issue #13 later recorded a Source Link comparison for specific lookup cases. The
+regressions below address those cases without establishing full SourceKitten parity.
 
 ## Implementation and reproducibility
 
@@ -35,8 +37,28 @@ The adapter lives in `Sources/SourceSymbols/Swift` and supplies its own qualifie
 and callable lookup spellings. Parser-independent models and matching live in
 `SourceSymbolsCore`, exposed through the single `SourceSymbols` consumer module.
 Parameter metadata retains local names separately from optional argument labels,
-records default presence, and classifies Swift variadics. Ruby extraction is
-deferred to the next PR; see [the architecture](ARCHITECTURE.md).
+records default presence, and classifies Swift variadics. See
+[the architecture](ARCHITECTURE.md) for the shared Swift/Ruby boundary.
+
+Associated-value enum cases provide positional signatures with labels, type syntax,
+and default presence, but nil local binding names. Each name in a grouped entry is
+paired with its own following `enum_type_parameters` node. Only that node's direct
+comma tokens separate values, so tuple/function/generic types and default-expression
+commas cannot split a value. Ordinary/raw-value cases retain base names and no signature.
+
+Swift qualification uses an enclosing callable's label-bearing name whenever its
+header is sound: `Host.outer(value:).inner()` and `Host.outer(text:).inner()` are
+distinct paths. The declaration's `qualifiedName` omits only its own argument list;
+`qualifiedCallableName` includes it. Lexical `enclosingScopes` still stores
+`["Host", "outer"]`. The adapter tracks lexical and lookup components separately,
+and supplies no legacy base-name scope alias. Same-label enclosing overloads and
+separate anonymous blocks can still produce ambiguous paths. A damaged enclosing
+header contributes its base name, preserving available declarations and diagnostics.
+
+Parameters are metadata, not independently navigable declarations. This includes
+callable bindings, closure parameters, and enum associated values. They add no
+declaration category, identifier range, or scope component. Query filters describe
+the target declaration's signature, never the enclosing callable's signature.
 
 ## Corpus and observed behavior
 
@@ -51,6 +73,9 @@ snapshots. The LF/CRLF pair is protected from Git newline conversion and formatt
 | --- | --- |
 | Struct/class, protocol, enum, nested types, type aliases, associated types, enum cases | Expected declarations and byte ranges |
 | Short/qualified names; overloads with different labels and identical labels | All candidates preserved; optional type/signature filters narrow matches |
+| Associated-value enum cases, grouped cases, labels, nested types/defaults, escaped names | Per-case callable aliases/signatures; shared full ranges and distinct identifier ranges |
+| Nested declarations through labeled callables, initializers, subscripts, deinitializers | Canonical label-bearing paths; lexical scopes retain base names; same-label overloads remain ambiguous |
+| Callable and associated-value parameters | Metadata only; no independent parameter declaration navigation |
 | Properties, comma/tuple bindings, computed properties, local functions/variables | Expected names, shared declaration ranges, and named scopes |
 | Extensions, including dotted and escaped names | Separate extension scopes; correctly qualified members |
 | Attributes, modifiers, documentation and interior/trailing comments | Full ranges include attributes/modifiers and interior trivia only |
@@ -91,6 +116,27 @@ snapshots. The LF/CRLF pair is protected from Git newline conversion and formatt
    unmatched or ambiguous results are returned without guessing.
 6. Performance on large or adversarial input and incremental parsing are not
    validated. Extraction currently reparses each immutable snapshot in full.
+7. `enum-underscore-label.swift` is accepted by Swift 6.4's frontend, but the pinned
+   grammar recovers a missing identifier for `case value(_: Int)`. The case retains
+   its base name and ranges, with a diagnostic and no signature/alias. Unlabeled
+   `case value(Int)`, explicit `case value(_ name: Int)`, and escaped underscore
+   labels are covered separately. This grammar gap is not hidden by synthesizing a
+   signature from an erroneous header.
+
+## Issue #13 validation on 2026-09-14
+
+`make check` passed locally with Swift 6.4 on macOS 26.6.2 (arm64): 57 Swift Testing
+tests, library/example builds, zero lint violations, and clean formatting.
+`enum-associated-values.swift` and `callable-scopes.swift` have source-authored JSON
+expectations for every declaration, lexical scope, lookup spelling, and UTF-8 range.
+`SwiftLookupTests.swift` additionally asserts enum signature/type filters, matching
+and ambiguity, parameter exclusion, LF/CRLF Unicode ranges, and recovery in
+`lookup-recovery.swift`. `enum-associated-labels.swift` covers explicit/escaped
+underscore labels, annotated types, interior trivia, and nested default punctuation.
+The new valid-source fixtures, including the underscore-only grammar regression,
+were accepted by Swift 6.4's frontend parser. This establishes syntactic validity
+only; overload fixtures need not typecheck. No new backend or platform parity claim
+is made.
 
 ## Validation recorded on 2026-09-13
 

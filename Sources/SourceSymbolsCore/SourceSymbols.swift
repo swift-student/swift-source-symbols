@@ -122,6 +122,7 @@ public struct Declaration: Sendable {
     }
 
     public let name: String
+    /// Backend-defined lookup path; it need not be the lexical scope names joined together.
     public let qualifiedName: String
     public let kind: Kind
     /// Nil for non-callables or a callable whose header could not be recovered reliably.
@@ -130,7 +131,7 @@ public struct Declaration: Sendable {
     public let callableName: String?
     public let qualifiedCallableName: String?
 
-    /// Outer-to-inner lexical scope names, including extension scopes.
+    /// Outer-to-inner lexical scope names, including extension scopes. These are not lookup aliases.
     public let enclosingScopes: [String]
     public let identifierRange: SourceRange
     public let declarationRange: SourceRange

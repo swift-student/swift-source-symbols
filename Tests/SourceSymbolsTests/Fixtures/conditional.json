@@ -120,5 +120,15 @@
       106,
       106
     ]
+  ],
+  "qualifiedNames": [
+    "Choice",
+    "Choice.a",
+    "Choice",
+    "Choice.b",
+    "Container",
+    "Container.selected",
+    "Container.selected",
+    "Container.fallback"
   ]
 }
