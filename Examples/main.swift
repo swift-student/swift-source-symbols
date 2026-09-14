@@ -51,3 +51,22 @@ if case let .unique(declaration) = DeclarationMatcher.match(
 for diagnostic in rubyResult.diagnostics {
     print(diagnostic.message)
 }
+
+let kotlinSnapshot = SourceSnapshot(text: """
+package shop
+class Cart {
+    fun add(value: Int) = value
+    fun add(value: String) = value
+}
+""", language: .kotlin)
+let kotlinResult = try TreeSitterKotlinExtractor().extract(from: kotlinSnapshot)
+if case let .unique(declaration) = DeclarationMatcher.match(
+    DeclarationQuery(name: .qualified("shop.Cart.add"), parameterTypes: ["String"]),
+    in: kotlinResult.declarations
+), let header = declaration.headerRange {
+    print(kotlinSnapshot.text(in: header) ?? "")
+}
+
+for diagnostic in kotlinResult.diagnostics {
+    print(diagnostic.message)
+}

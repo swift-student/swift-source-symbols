@@ -1,0 +1,90 @@
+{
+  "declarations": [
+    {
+      "name": "bodyError",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        4,
+        13
+      ],
+      "declarationRange": [
+        0,
+        46
+      ]
+    },
+    {
+      "name": "broken",
+      "kind": "variable",
+      "scopes": [
+        "bodyError"
+      ],
+      "identifierRange": [
+        36,
+        42
+      ],
+      "declarationRange": [
+        32,
+        42
+      ]
+    },
+    {
+      "name": "headerError",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        51,
+        62
+      ],
+      "declarationRange": [
+        47,
+        97
+      ]
+    },
+    {
+      "name": "available",
+      "kind": "variable",
+      "scopes": [
+        "headerError"
+      ],
+      "identifierRange": [
+        82,
+        91
+      ],
+      "declarationRange": [
+        78,
+        95
+      ]
+    },
+    {
+      "name": "after",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        102,
+        107
+      ],
+      "declarationRange": [
+        98,
+        113
+      ]
+    }
+  ],
+  "diagnosticRanges": [
+    [
+      43,
+      44
+    ],
+    [
+      69,
+      69
+    ]
+  ],
+  "qualifiedNames": [
+    "bodyError",
+    "bodyError.broken",
+    "headerError",
+    "headerError.available",
+    "after"
+  ]
+}

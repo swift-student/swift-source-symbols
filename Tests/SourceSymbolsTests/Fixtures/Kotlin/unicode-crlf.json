@@ -1,0 +1,53 @@
+{
+  "declarations": [
+    {
+      "name": "箱",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        50,
+        55
+      ],
+      "declarationRange": [
+        44,
+        143
+      ]
+    },
+    {
+      "name": "café",
+      "kind": "method",
+      "scopes": [
+        "箱"
+      ],
+      "identifierRange": [
+        67,
+        75
+      ],
+      "declarationRange": [
+        63,
+        117
+      ]
+    },
+    {
+      "name": "名",
+      "kind": "property",
+      "scopes": [
+        "箱"
+      ],
+      "identifierRange": [
+        127,
+        132
+      ],
+      "declarationRange": [
+        123,
+        140
+      ]
+    }
+  ],
+  "diagnosticRanges": [],
+  "qualifiedNames": [
+    "café.箱",
+    "café.箱.café",
+    "café.箱.名"
+  ]
+}
