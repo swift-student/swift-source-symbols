@@ -31,3 +31,6 @@ and `conditional.swift`. They remain valid-source regressions, not invalid Swift
 the original bytes, emoji, decomposed accent, and identifier escaping. Git attributes
 and both formatting tools exclude fixtures from normalization. Never run a formatter
 over these files. Incomplete syntax and known grammar gaps must remain reproducible.
+
+The original Ruby corpus lives in [Ruby](Ruby/README.md), with separate language
+expectations and the same snapshot/range/matching contract helpers.

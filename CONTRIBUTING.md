@@ -7,8 +7,9 @@ macOS; Swift 6.0 compiler compatibility and iOS/Linux support are not yet verifi
 Install SwiftLint **0.65.1** and SwiftFormat **0.62.1** from their upstream tagged
 releases, and place their executables on PATH. `make tools` verifies exact versions;
 CI installs these same releases with verified SHA-256 checksums. Tool installation is maintainer setup and
-is not required by library consumers. The Tree-sitter runtime dependency is pinned in Package.swift; the Swift grammar
-is vendored with [provenance](Vendor/tree-sitter-swift/PROVENANCE.md).
+is not required by library consumers. The Tree-sitter runtime dependency is pinned in Package.swift; the Swift and Ruby grammars
+are vendored with [Swift provenance](Vendor/tree-sitter-swift/PROVENANCE.md) and
+[Ruby provenance](Vendor/tree-sitter-ruby/PROVENANCE.md).
 
 - `make build`: compile the library and example.
 - `make test`: run Swift Testing contract tests.

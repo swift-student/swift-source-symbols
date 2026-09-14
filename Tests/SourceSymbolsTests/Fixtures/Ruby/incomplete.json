@@ -1,0 +1,26 @@
+{
+  "declarations": [
+    {
+      "name": "healthy",
+      "kind": "method",
+      "scopes": [],
+      "identifierRange": [
+        4,
+        11
+      ],
+      "declarationRange": [
+        0,
+        30
+      ]
+    }
+  ],
+  "diagnosticRanges": [
+    [
+      0,
+      100
+    ]
+  ],
+  "qualifiedNames": [
+    "healthy"
+  ]
+}

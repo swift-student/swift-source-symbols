@@ -3,7 +3,7 @@
 SourceSymbols is one library product for projects containing multiple languages.
 Consumers use `import SourceSymbols`; the product bundles every implemented backend.
 There are no per-language product choices or external backend registration system.
-Swift is the only implemented language. Ruby extraction belongs in the next PR.
+Swift and Ruby are implemented; each has an explicit extractor.
 
 ## Internal boundaries
 
@@ -12,21 +12,22 @@ Swift is the only implemented language. Ruby extraction belongs in the next PR.
   depends only on Foundation and has no parser dependency.
 - `Sources/SourceSymbols/Exports.swift` exposes the shared types through explicit
   public aliases, keeping the consumer import independent of the internal split.
-- `Sources/SourceSymbols/Swift` implements Swift extraction and owns its grammar
+- `Sources/SourceSymbols/Swift` and `Sources/SourceSymbols/Ruby` own their grammar
   interpretation, qualification, callable spellings, scope rules, trivia rules,
-  and error recovery. A later `Ruby` directory can implement the same protocol.
-- `Vendor/tree-sitter-swift` is a separate C target with pinned provenance.
-  Vendored or generated code never mixes with handwritten Swift.
+  and error recovery. Ruby also associates delayed heredoc bodies with their owners.
+- `Sources/SourceSymbols/TreeSitter` shares only parser/tree ownership and borrowed
+  node access. Both backends use the same runtime without exposing backend handles.
+- `Vendor/tree-sitter-swift` and `Vendor/tree-sitter-ruby` are separate C targets
+  with pinned provenance. Vendored/generated code never mixes with handwritten Swift.
 
 The core cannot depend on a language adapter: the adapter target depends on the
 core. All extraction stays synchronous, Sendable, and in memory. No parser handle
 can outlive the extraction call or appear in a result. File loading, UI, URLs,
 editors, Git, and project-wide semantic resolution remain consumer responsibilities.
 
-Tree-sitter ownership and borrowed-node access are candidates for internal reuse
-when a second backend exists. Do not generalize Swift node names, trivia treatment,
-recovery assumptions, or scope traversal into a universal parser. The first Ruby
-implementation should establish which mechanics actually have identical contracts.
+Shared Tree-sitter mechanics do not interpret node kinds, trivia, or recovery.
+These differ by language: Ruby's extra nodes can be executable heredoc bodies,
+while Swift's extra-node policy excludes trivia. Language policy stays in adapters.
 
 ## Shared metadata and language policy
 
@@ -44,18 +45,18 @@ all candidates satisfying the supplied filters.
 
 The core tests construct untyped positional, keyword, rest, and block parameter
 metadata and arbitrary lookup spellings without invoking a parser. Those tests
-validate representation and matching, not Ruby extraction support or completeness.
-The API remains open to breaking changes as the next real backend establishes
+validate representation and matching; the Ruby integration corpus separately
+validates extraction. The API remains open to breaking changes as another backend establishes
 additional requirements; it does not claim an exhaustive model of every language.
 
-## Adding Ruby
+## Adding a language
 
-1. Add `.ruby` to `SourceLanguage` alongside a real `DeclarationExtractor`
-   implementation under `Sources/SourceSymbols/Ruby`. Keep the single library product.
+1. Add a `SourceLanguage` case alongside a real `DeclarationExtractor` implementation
+   in its own directory under `Sources/SourceSymbols`. Keep the single library product.
 2. Pin and document any new runtime or grammar, preserving generated-source and
    license provenance. Keep its backend handles private to each extraction call.
 3. Specify declaration categories, lexical scope rules, qualification, and callable
-   lookup spellings from Ruby syntax. Preserve every syntactic candidate and parse
+   lookup spellings from the language syntax. Preserve every syntactic candidate and parse
    diagnostic; do not infer runtime redefinition or dispatch behavior.
 4. Add independently authored fixtures with exact byte ranges. Reuse
    `Tests/SourceSymbolsTests/Support/BackendContract.swift` for snapshot ownership,

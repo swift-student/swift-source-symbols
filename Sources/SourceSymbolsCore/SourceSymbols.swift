@@ -2,7 +2,7 @@ import Foundation
 
 /// Languages recognized by the API; extraction availability depends on the backend.
 public enum SourceLanguage: String, Hashable, Sendable {
-    case swift
+    case swift, ruby
 }
 
 /// Immutable source text. Ranges are meaningful only within this snapshot.
