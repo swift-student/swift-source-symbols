@@ -17,7 +17,51 @@ snapshot, never for edited text.
 `range(utf16Offsets:)` and `utf16Offsets(for:)` convert zero-based half-open UTF-16
 ranges. They reject out-of-bounds offsets, boundaries inside surrogate pairs, and
 ranges belonging to another snapshot. A boundary between CR and LF is valid in
-both encodings. Line/column and editor-specific adapters remain consumer work.
+both encodings. Generic line/column conversion is available through the core's
+`SourcePositionIndex`; editor-specific adapters remain consumer work.
+
+## Source positions
+
+Build `SourcePositionIndex(snapshot:)` once and reuse it for positions in that
+immutable snapshot. `position(in:at:columnEncoding:)` converts a `SourceRange`'s
+`.start` (the default) or `.end` (the exclusive upper bound). Foreign-snapshot
+ranges return nil, including ranges from a new snapshot with identical text.
+Snapshot copies retain identity and are accepted. `position(atUTF8Offset:columnEncoding:)`
+interprets a zero-based byte offset in the indexed snapshot; negative, out-of-bounds,
+and scalar-interior offsets return nil without clamping. EOF is valid.
+
+`SourcePosition` retains the snapshot ID, canonical UTF-8 offset, selected column
+encoding, and **one-based** `line` and `column`. Select `.utf8` for byte columns or
+`.utf16` for UTF-16 code-unit columns. For example, 😀 contributes four UTF-8 bytes and two
+UTF-16 code units; a combining scalar contributes separately, and tabs count as one
+code unit without visual expansion. These are source coordinates, not display widths.
+No conversion changes the canonical zero-based, half-open UTF-8 range model.
+
+LF, lone CR, and CRLF each terminate a line. A position before a line terminator is
+at the end of that line. The valid boundary **between CR and LF** stays on the
+preceding line, with CR contributing one column; the next line begins after LF.
+Other Unicode separators are ordinary scalars. Empty input has position `(1, 1)`;
+a trailing terminator creates an empty final line whose EOF column is 1. EOF without
+a trailing terminator is just after the final scalar on the last line. Source bytes,
+including newline spelling and Unicode normalization, are preserved.
+
+Construction makes one pass over the source and stores line starts and multibyte
+scalar spans. Storage is proportional to the number of lines plus non-ASCII scalars;
+each lookup uses binary searches over those two tables, without rescanning source
+text. Index copies share immutable storage, and the index is `Sendable` for concurrent
+lookups. It retains its original snapshot identity even after a consumer edits text;
+create a new snapshot and index for the edited source.
+
+```swift
+let positions = SourcePositionIndex(snapshot: result.snapshot)
+if let position = positions.position(in: declaration.identifierRange, columnEncoding: .utf16) {
+    // One-based line and UTF-16 column, as needed by Source Link.
+    print(position.line, position.column)
+}
+```
+
+The compiled `UsageExample` demonstrates this with an extracted identifier.
+Position conversion does not inspect or suppress extraction diagnostics.
 
 ## Extraction and ranges
 

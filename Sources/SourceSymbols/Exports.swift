@@ -4,6 +4,8 @@ public import SourceSymbolsCore
 public typealias SourceLanguage = SourceSymbolsCore.SourceLanguage
 public typealias SourceSnapshot = SourceSymbolsCore.SourceSnapshot
 public typealias SourceRange = SourceSymbolsCore.SourceRange
+public typealias SourcePosition = SourceSymbolsCore.SourcePosition
+public typealias SourcePositionIndex = SourceSymbolsCore.SourcePositionIndex
 public typealias CallableSignature = SourceSymbolsCore.CallableSignature
 public typealias Declaration = SourceSymbolsCore.Declaration
 public typealias ExtractionError = SourceSymbolsCore.ExtractionError

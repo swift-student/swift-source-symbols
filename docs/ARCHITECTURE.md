@@ -7,7 +7,7 @@ Swift and Ruby are implemented; each has an explicit extractor.
 
 ## Internal boundaries
 
-- `Sources/SourceSymbolsCore` contains snapshots, ranges, declarations, callable
+- `Sources/SourceSymbolsCore` contains snapshots, ranges, reusable line/column indexes, declarations, callable
   metadata, diagnostics, the extractor protocol, and exact matching. This target
   depends only on Foundation and has no parser dependency.
 - `Sources/SourceSymbols/Exports.swift` exposes the shared types through explicit
