@@ -1,0 +1,470 @@
+{
+  "declarations": [
+    {
+      "name": "Tools",
+      "kind": "extensionScope",
+      "scopes": [],
+      "identifierRange": [
+        83,
+        88
+      ],
+      "declarationRange": [
+        62,
+        1046
+      ]
+    },
+    {
+      "name": "Store",
+      "kind": "type",
+      "scopes": [
+        "App.Tools"
+      ],
+      "identifierRange": [
+        110,
+        115
+      ],
+      "declarationRange": [
+        93,
+        223
+      ]
+    },
+    {
+      "name": "size",
+      "kind": "property",
+      "scopes": [
+        "App.Tools",
+        "Store"
+      ],
+      "identifierRange": [
+        154,
+        158
+      ],
+      "declarationRange": [
+        145,
+        166
+      ]
+    },
+    {
+      "name": "read",
+      "kind": "method",
+      "scopes": [
+        "App.Tools",
+        "Store"
+      ],
+      "identifierRange": [
+        172,
+        176
+      ],
+      "declarationRange": [
+        172,
+        192
+      ]
+    },
+    {
+      "name": "read",
+      "kind": "method",
+      "scopes": [
+        "App.Tools",
+        "Store"
+      ],
+      "identifierRange": [
+        198,
+        202
+      ],
+      "declarationRange": [
+        198,
+        218
+      ]
+    },
+    {
+      "name": "Item",
+      "kind": "typeAlias",
+      "scopes": [
+        "App.Tools"
+      ],
+      "identifierRange": [
+        238,
+        242
+      ],
+      "declarationRange": [
+        226,
+        281
+      ]
+    },
+    {
+      "name": "value",
+      "kind": "property",
+      "scopes": [
+        "App.Tools",
+        "Item"
+      ],
+      "identifierRange": [
+        247,
+        252
+      ],
+      "declarationRange": [
+        247,
+        260
+      ]
+    },
+    {
+      "name": "format",
+      "kind": "method",
+      "scopes": [
+        "App.Tools",
+        "Item"
+      ],
+      "identifierRange": [
+        262,
+        268
+      ],
+      "declarationRange": [
+        262,
+        278
+      ]
+    },
+    {
+      "name": "State",
+      "kind": "type",
+      "scopes": [
+        "App.Tools"
+      ],
+      "identifierRange": [
+        302,
+        307
+      ],
+      "declarationRange": [
+        284,
+        332
+      ]
+    },
+    {
+      "name": "Ready",
+      "kind": "enumCase",
+      "scopes": [
+        "App.Tools",
+        "State"
+      ],
+      "identifierRange": [
+        310,
+        315
+      ],
+      "declarationRange": [
+        310,
+        315
+      ]
+    },
+    {
+      "name": "Busy",
+      "kind": "enumCase",
+      "scopes": [
+        "App.Tools",
+        "State"
+      ],
+      "identifierRange": [
+        317,
+        321
+      ],
+      "declarationRange": [
+        317,
+        330
+      ]
+    },
+    {
+      "name": "Client",
+      "kind": "type",
+      "scopes": [
+        "App.Tools"
+      ],
+      "identifierRange": [
+        367,
+        373
+      ],
+      "declarationRange": [
+        335,
+        824
+      ]
+    },
+    {
+      "name": "count",
+      "kind": "property",
+      "scopes": [
+        "App.Tools",
+        "Client"
+      ],
+      "identifierRange": [
+        423,
+        428
+      ],
+      "declarationRange": [
+        416,
+        432
+      ]
+    },
+    {
+      "name": "#secret",
+      "kind": "property",
+      "scopes": [
+        "App.Tools",
+        "Client"
+      ],
+      "identifierRange": [
+        438,
+        445
+      ],
+      "declarationRange": [
+        438,
+        450
+      ]
+    },
+    {
+      "name": "size",
+      "kind": "property",
+      "scopes": [
+        "App.Tools",
+        "Client"
+      ],
+      "identifierRange": [
+        465,
+        469
+      ],
+      "declarationRange": [
+        456,
+        477
+      ]
+    },
+    {
+      "name": "constructor",
+      "kind": "initializer",
+      "scopes": [
+        "App.Tools",
+        "Client"
+      ],
+      "identifierRange": [
+        483,
+        494
+      ],
+      "declarationRange": [
+        483,
+        514
+      ]
+    },
+    {
+      "name": "read",
+      "kind": "method",
+      "scopes": [
+        "App.Tools",
+        "Client"
+      ],
+      "identifierRange": [
+        528,
+        532
+      ],
+      "declarationRange": [
+        519,
+        548
+      ]
+    },
+    {
+      "name": "read",
+      "kind": "method",
+      "scopes": [
+        "App.Tools",
+        "Client"
+      ],
+      "identifierRange": [
+        554,
+        558
+      ],
+      "declarationRange": [
+        554,
+        574
+      ]
+    },
+    {
+      "name": "read",
+      "kind": "method",
+      "scopes": [
+        "App.Tools",
+        "Client"
+      ],
+      "identifierRange": [
+        580,
+        584
+      ],
+      "declarationRange": [
+        580,
+        653
+      ]
+    },
+    {
+      "name": "local",
+      "kind": "variable",
+      "scopes": [
+        "App.Tools",
+        "Client",
+        "read"
+      ],
+      "identifierRange": [
+        618,
+        623
+      ],
+      "declarationRange": [
+        612,
+        637
+      ]
+    },
+    {
+      "name": "current",
+      "kind": "property",
+      "scopes": [
+        "App.Tools",
+        "Client"
+      ],
+      "identifierRange": [
+        662,
+        669
+      ],
+      "declarationRange": [
+        658,
+        697
+      ]
+    },
+    {
+      "name": "current",
+      "kind": "property",
+      "scopes": [
+        "App.Tools",
+        "Client"
+      ],
+      "identifierRange": [
+        706,
+        713
+      ],
+      "declarationRange": [
+        702,
+        747
+      ]
+    },
+    {
+      "name": "send",
+      "kind": "method",
+      "scopes": [
+        "App.Tools",
+        "Client"
+      ],
+      "identifierRange": [
+        758,
+        762
+      ],
+      "declarationRange": [
+        752,
+        820
+      ]
+    },
+    {
+      "name": "choose",
+      "kind": "function",
+      "scopes": [
+        "App.Tools"
+      ],
+      "identifierRange": [
+        843,
+        849
+      ],
+      "declarationRange": [
+        827,
+        873
+      ]
+    },
+    {
+      "name": "choose",
+      "kind": "function",
+      "scopes": [
+        "App.Tools"
+      ],
+      "identifierRange": [
+        892,
+        898
+      ],
+      "declarationRange": [
+        876,
+        922
+      ]
+    },
+    {
+      "name": "choose",
+      "kind": "function",
+      "scopes": [
+        "App.Tools"
+      ],
+      "identifierRange": [
+        941,
+        947
+      ],
+      "declarationRange": [
+        925,
+        1006
+      ]
+    },
+    {
+      "name": "first",
+      "kind": "variable",
+      "scopes": [
+        "App.Tools"
+      ],
+      "identifierRange": [
+        1022,
+        1027
+      ],
+      "declarationRange": [
+        1009,
+        1044
+      ]
+    },
+    {
+      "name": "second",
+      "kind": "variable",
+      "scopes": [
+        "App.Tools"
+      ],
+      "identifierRange": [
+        1033,
+        1039
+      ],
+      "declarationRange": [
+        1009,
+        1044
+      ]
+    },
+    {
+      "name": "\"remote\"",
+      "kind": "extensionScope",
+      "scopes": [],
+      "identifierRange": [
+        1062,
+        1070
+      ],
+      "declarationRange": [
+        1047,
+        1104
+      ]
+    },
+    {
+      "name": "load",
+      "kind": "function",
+      "scopes": [
+        "\"remote\""
+      ],
+      "identifierRange": [
+        1089,
+        1093
+      ],
+      "declarationRange": [
+        1073,
+        1102
+      ]
+    }
+  ],
+  "diagnostics": []
+}

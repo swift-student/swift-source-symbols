@@ -2,7 +2,7 @@ import Foundation
 
 /// Languages recognized by the API; extraction availability depends on the backend.
 public enum SourceLanguage: String, Hashable, Sendable {
-    case swift, ruby, kotlin
+    case swift, ruby, kotlin, typescript, tsx
 }
 
 /// Immutable source text. Ranges are meaningful only within this snapshot.
@@ -86,15 +86,18 @@ public struct CallableSignature: Equatable, Sendable {
         public let passing: Passing
         /// Records the presence of a default, without including its expression.
         public let hasDefaultValue: Bool
+        /// An explicit optional-parameter marker, independent of a default or nullable type.
+        public let isOptional: Bool
 
         public init(name: String? = nil, argumentLabel: String? = nil, typeSyntax: String? = nil,
-                    passing: Passing = .positional, hasDefaultValue: Bool = false)
+                    passing: Passing = .positional, hasDefaultValue: Bool = false, isOptional: Bool = false)
         {
             self.name = name
             self.argumentLabel = argumentLabel
             self.typeSyntax = typeSyntax
             self.passing = passing
             self.hasDefaultValue = hasDefaultValue
+            self.isOptional = isOptional
         }
     }
 

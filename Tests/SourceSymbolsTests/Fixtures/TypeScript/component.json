@@ -1,0 +1,102 @@
+{
+  "declarations": [
+    {
+      "name": "Props",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        17,
+        22
+      ],
+      "declarationRange": [
+        0,
+        41
+      ]
+    },
+    {
+      "name": "title",
+      "kind": "property",
+      "scopes": [
+        "Props"
+      ],
+      "identifierRange": [
+        25,
+        30
+      ],
+      "declarationRange": [
+        25,
+        38
+      ]
+    },
+    {
+      "name": "View",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        58,
+        62
+      ],
+      "declarationRange": [
+        42,
+        293
+      ]
+    },
+    {
+      "name": "render",
+      "kind": "variable",
+      "scopes": [
+        "View"
+      ],
+      "identifierRange": [
+        104,
+        110
+      ],
+      "declarationRange": [
+        98,
+        160
+      ]
+    },
+    {
+      "name": "nested",
+      "kind": "variable",
+      "scopes": [
+        "View"
+      ],
+      "identifierRange": [
+        222,
+        228
+      ],
+      "declarationRange": [
+        216,
+        237
+      ]
+    },
+    {
+      "name": "App",
+      "kind": "variable",
+      "scopes": [],
+      "identifierRange": [
+        307,
+        310
+      ],
+      "declarationRange": [
+        294,
+        358
+      ]
+    },
+    {
+      "name": "fragment",
+      "kind": "variable",
+      "scopes": [],
+      "identifierRange": [
+        365,
+        373
+      ],
+      "declarationRange": [
+        359,
+        436
+      ]
+    }
+  ],
+  "diagnostics": []
+}

@@ -65,6 +65,8 @@ private func declaration(_ qualifiedName: String, signature: CallableSignature?,
 @Test func exactSignaturesDistinguishPassingDefaultsAndBindingNames() throws {
     let parameters: [CallableSignature.Parameter] = [
         .init(name: "value"),
+        .init(name: "value", isOptional: true),
+        .init(name: "value", hasDefaultValue: true),
         .init(name: "value", argumentLabel: "value", passing: .keyword),
         .init(name: "value", argumentLabel: "value", passing: .keyword, hasDefaultValue: true),
         .init(name: "items", passing: .variadicPositional),

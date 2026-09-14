@@ -3,7 +3,8 @@
 SourceSymbols is one library product for projects containing multiple languages.
 Consumers use `import SourceSymbols`; the product bundles every implemented backend.
 There are no per-language product choices or external backend registration system.
-Swift, Ruby, and Kotlin are implemented; each has an explicit extractor.
+Swift, Ruby, Kotlin, and TypeScript/TSX are implemented with explicit extractors.
+The TypeScript extractor selects its grammar from `.typescript` or `.tsx`.
 
 ## Internal boundaries
 
@@ -12,13 +13,15 @@ Swift, Ruby, and Kotlin are implemented; each has an explicit extractor.
   depends only on Foundation and has no parser dependency.
 - `Sources/SourceSymbols/Exports.swift` exposes the shared types through explicit
   public aliases, keeping the consumer import independent of the internal split.
-- `Sources/SourceSymbols/Swift`, `Sources/SourceSymbols/Ruby`, and
-  `Sources/SourceSymbols/Kotlin` own their grammar interpretation, qualification, callable spellings, scope rules, trivia rules,
+- `Sources/SourceSymbols/Swift`, `Sources/SourceSymbols/Ruby`,
+  `Sources/SourceSymbols/Kotlin` and `Sources/SourceSymbols/TypeScript` own their grammar
+  interpretation, qualification, callable spellings, scope rules, trivia rules,
   and error recovery. Ruby also associates delayed heredoc bodies with their owners.
 - `Sources/SourceSymbols/TreeSitter` shares only parser/tree ownership and borrowed
   node access. All backends use the same runtime without exposing backend handles.
-- `Vendor/tree-sitter-swift`, `Vendor/tree-sitter-ruby`, and `Vendor/tree-sitter-kotlin`
-  are separate C targets with pinned provenance. Vendored/generated code never mixes with handwritten Swift.
+- `Vendor/tree-sitter-swift`, `Vendor/tree-sitter-ruby`, `Vendor/tree-sitter-kotlin`, and
+  `Vendor/tree-sitter-typescript` are separate C targets
+  with pinned provenance. Vendored/generated code never mixes with handwritten Swift.
 
 The core cannot depend on a language adapter: the adapter target depends on the
 core. All extraction stays synchronous, Sendable, and in memory. No parser handle
@@ -37,7 +40,7 @@ lists. Named lexical scopes are retained separately from those spellings; they d
 not establish a project-wide semantic identity.
 
 Callable parameters distinguish local names, external labels, passing styles,
-optional annotations, and default presence. An absent annotation is represented
+optional annotations, explicit optional-parameter markers, and default presence. An absent annotation is represented
 by nil rather than an empty string or fabricated type. Exact structured-signature
 matching compares every represented field. It performs no language-specific
 overload resolution. Name-only and annotation-only queries intentionally preserve
@@ -51,8 +54,8 @@ shared matcher. New backends must document and test their header conventions.
 
 The core tests construct untyped positional, keyword, rest, and block parameter
 metadata and arbitrary lookup spellings without invoking a parser. Those tests
-validate representation and matching; the Ruby integration corpus separately
-validates extraction. The API remains open to breaking changes as another backend establishes
+validate representation and matching; the Ruby, Kotlin, and TypeScript/TSX integration corpora separately
+validate extraction. The API remains open to breaking changes as another backend establishes
 additional requirements; it does not claim an exhaustive model of every language.
 
 ## Adding a language

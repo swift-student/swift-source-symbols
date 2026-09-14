@@ -1,8 +1,8 @@
 # API contract
 
 SourceSymbols operates on immutable in-memory `SourceSnapshot` values with an
-explicit `SourceLanguage` enum containing `.swift`, `.ruby`, and `.kotlin`. Each newly
-initialized snapshot has a unique identity; copies retain that identity.
+explicit `SourceLanguage` enum containing `.swift`, `.ruby`, `.kotlin`, `.typescript`, and `.tsx`.
+Each newly initialized snapshot has a unique identity; copies retain that identity.
 The package has one public product and consumer import, `SourceSymbols`, bundling
 the available backends. Shared models and matching live in the parser-independent
 `SourceSymbolsCore` target; language adapters live in `SourceSymbols`. See
@@ -65,10 +65,12 @@ Position conversion does not inspect or suppress extraction diagnostics.
 
 ## Extraction and ranges
 
-`TreeSitterSwiftExtractor`, `TreeSitterRubyExtractor`, and `TreeSitterKotlinExtractor` implement the synchronous,
+`TreeSitterSwiftExtractor`, `TreeSitterRubyExtractor`, `TreeSitterKotlinExtractor`, and
+`TreeSitterTypeScriptExtractor` implement the synchronous,
 throwing, `Sendable` `DeclarationExtractor` protocol. They parse text directly as
-UTF-8 using Tree-sitter Swift 0.7.3, Ruby 0.23.1, or Kotlin 1.1.0 and runtime 0.25.10.
-Each extractor accepts only its corresponding language. Each call creates and disposes its own
+UTF-8 using Tree-sitter Swift 0.7.3, Ruby 0.23.1, Kotlin 1.1.0, or TypeScript/TSX 0.23.2 and runtime 0.25.10.
+Each extractor accepts only its corresponding language; the TypeScript extractor
+accepts both `.typescript` and `.tsx`. Each call creates and disposes its own
 parser/tree; it may be called concurrently. No backend pointer escapes in a result.
 The input length is checked against Tree-sitter's 32-bit byte limit before parsing.
 
@@ -134,6 +136,8 @@ presentation, truncation, qualification/context labels, and styling.
 | Ruby static aliases | Whole alias declaration |
 | Ruby constant assignments | Nil: the adapter does not define a separate header for initializer-only declarations |
 | Ruby headers containing heredocs | Nil: delayed default/superclass/receiver text cannot reliably form one contiguous header without body syntax |
+| TypeScript/TSX functions, methods, types, namespaces | Excludes the recognized body and statement terminator; includes export/declare wrappers, decorators, modifiers, generic syntax, defaults, and return annotations |
+| TypeScript/TSX bindings, stored properties, type aliases, enum members | Whole declaration syntax excluding a trailing separator; grouped bindings share the statement header, including initializer expressions |
 
 A stored Swift closure initializer remains part of its binding's header; it can be
 large. Ruby methods with heredocs only in their implementation retain their header.
@@ -165,7 +169,7 @@ if case let .ambiguous(choices) = DeclarationMatcher.match(
 
 `CallableSignature` is syntactic metadata rather than a semantic callable identity.
 Its ordered parameters contain a local binding `name`, an external `argumentLabel`,
-optional `typeSyntax`, a `passing` style, and `hasDefaultValue`. Names and labels are
+optional `typeSyntax`, a `passing` style, `hasDefaultValue`, and `isOptional`. Names and labels are
 independent: Swift's `value local: Int` has name `local` and label `value`, while
 `_ local: Int` has name `local` and a nil label. A nil name means there is no single
 named binding, for example Swift's `ignored _: Int`. A nil type means no annotation
@@ -177,7 +181,9 @@ block. Positional parameters may have labels; Swift's ordered labeled arguments
 remain positional. Ruby keyword, rest, and block parameters use their respective
 passing styles. Default expressions are excluded, but their presence is
 recorded. Exact signature equality includes all parameter fields, including local
-names, passing styles, and default presence. Use a callable-name or parameter-type
+names, passing styles, default presence, and explicit optionality.
+`isOptional` defaults to false and records an explicit marker such as TypeScript
+`value?: T`; it does not follow from a default expression or a nullable type. Use a callable-name or parameter-type
 query when those extra distinctions are irrelevant.
 
 Optional generic parameter syntax, generic constraints, effects, and return type
@@ -270,6 +276,7 @@ inside `Cart`, `self::Nested` qualifies as `Cart::Nested` while retaining
 
 Ruby parameter annotations are nil. Positional/defaulted, keyword, rest, keyword
 rest, and block parameters retain names, passing styles, and default presence.
+Ruby parameters leave `isOptional` false.
 Anonymous `*`, `**`, and `&` parameters retain their channel with a nil name.
 Forwarding (`...`), destructuring, and keyword rejection (`**nil`) are not fully
 represented by the shared model, so those methods have nil signatures. Aliases
@@ -305,6 +312,39 @@ type modifiers such as `suspend`. See the
 [Kotlin backend contract](KOTLIN_BACKEND.md) for exact scope/header conventions,
 independently tested coverage, and pinned-grammar recovery limitations.
 
+## TypeScript and TSX extraction and lookup
+
+Use `.typescript` for TypeScript (including declaration-file syntax) or `.tsx`
+for JSX-bearing TypeScript with `TreeSitterTypeScriptExtractor`. Dialects are
+explicit; no filename or content detection occurs. Classes, interfaces, and enums
+are `type`; namespaces and ambient modules are `extensionScope`; type aliases,
+functions, methods, constructors, fields/accessors, enum members, and variable
+bindings retain their corresponding declaration kinds. Direct arrow/function
+initializers provide signatures on the variable/property binding.
+
+Lookup paths join named lexical scopes with `.`, with no callable aliases.
+`namespace App.Tools` contributes the scope component `App.Tools` and has short
+name `Tools`. String/numeric/private names retain their source spelling, including
+quotes or `#`. Overload signatures, implementations, merged declarations, and
+same-name accessors remain separate candidates. Signature filters compare the
+represented metadata without resolving types or inferring annotations.
+
+Parameters retain explicit types, local names, rest passing, defaults, and `?`
+optionality. Destructured parameters have nil binding names; explicit `this`
+pseudo-parameters cause the whole signature to be nil because the shared model
+has no receiver channel. Type-parameter clauses retain constraints and defaults
+verbatim; `genericConstraints` stays nil. `async` and generator `*` are effects.
+All parameters (including constructor parameter properties) are metadata only.
+
+Headers preserve original bytes and exclude recognized bodies and trailing
+separators. Export/declare wrappers and decorators belong to declaration ranges.
+Anonymous bodies add no name; named function/class expressions do. Initializers
+of simple bindings contribute the binding's scope, while destructuring contributes
+no single name. TypeScript's import/re-export bindings, computed member names,
+unnamed call/construct/index signatures, and members of arbitrary nested type
+expressions are omitted. See the [TypeScript/TSX backend contract](TYPESCRIPT_BACKEND.md)
+for exact range, recovery, coverage, and limitation conventions.
+
 ## Diagnostics and limitations
 
 Tree-sitter `ERROR` and missing-token nodes produce error-severity `ParseDiagnostic`
@@ -320,10 +360,11 @@ Unsupported languages throw `ExtractionError.unsupportedLanguage`; fatal backend
 setup/parse failures throw `TreeSitterExtractionError`. A clean parser result does
 not guarantee that every declaration category is extracted. See the tested syntax
 and known gaps in the [Swift backend decision](SWIFT_BACKEND.md),
-[Ruby backend contract](RUBY_BACKEND.md), and [Kotlin backend contract](KOTLIN_BACKEND.md).
+[Ruby backend contract](RUBY_BACKEND.md), [Kotlin backend contract](KOTLIN_BACKEND.md),
+and [TypeScript/TSX contract](TYPESCRIPT_BACKEND.md).
 
 The package uses Swift tools 6.0, Swift 6 language mode, and a macOS 13 deployment
-minimum. All three backends have been locally validated with Swift 6.4 on macOS 26.6.2
+minimum. All backends have been locally validated with Swift 6.4 on macOS 26.6.2
 (arm64). The configured Swift 6.0/6.2 CI matrix still needs to run against these
 changes; macOS 13 runtime, iOS, and Linux are not validated. SourceKitten execution
 and a SwiftSyntax comparison were intentionally deferred in the issue #6 discussion.

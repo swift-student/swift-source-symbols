@@ -1,0 +1,48 @@
+{
+  "declarations": [
+    {
+      "name": "Café",
+      "kind": "extensionScope",
+      "scopes": [],
+      "identifierRange": [
+        51,
+        56
+      ],
+      "declarationRange": [
+        41,
+        164
+      ]
+    },
+    {
+      "name": "café",
+      "kind": "function",
+      "scopes": [
+        "Café"
+      ],
+      "identifierRange": [
+        78,
+        84
+      ],
+      "declarationRange": [
+        62,
+        134
+      ]
+    },
+    {
+      "name": "résumé",
+      "kind": "variable",
+      "scopes": [
+        "Café"
+      ],
+      "identifierRange": [
+        144,
+        152
+      ],
+      "declarationRange": [
+        138,
+        161
+      ]
+    }
+  ],
+  "diagnostics": []
+}

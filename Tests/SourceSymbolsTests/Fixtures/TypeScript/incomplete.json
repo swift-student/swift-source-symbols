@@ -1,0 +1,23 @@
+{
+  "declarations": [
+    {
+      "name": "local",
+      "kind": "variable",
+      "scopes": [],
+      "identifierRange": [
+        62,
+        67
+      ],
+      "declarationRange": [
+        56,
+        72
+      ]
+    }
+  ],
+  "diagnostics": [
+    [
+      0,
+      73
+    ]
+  ]
+}
