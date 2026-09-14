@@ -35,6 +35,8 @@ struct TypeScriptSyntaxExtraction {
         let node: SyntaxNode
         var context: Context
         var rangeOwner: SyntaxNode?
+        var decorators: [SyntaxNode] = []
+        var enumIdentifier: SyntaxNode?
     }
 
     let snapshot: SourceSnapshot
@@ -60,10 +62,16 @@ struct TypeScriptSyntaxExtraction {
         let node = work.node
         let context = work.context
         let owner = work.rangeOwner ?? node
+        if let identifier = work.enumIdentifier {
+            try append(identifier, owner: node, kind: .enumCase, context: context,
+                       header: headerRange(node, owner: node))
+            return children(node, context: healthy(identifier) ? context.nested(text(identifier)) : context)
+        }
         switch node.kind {
         case "export_statement":
-            guard let child = node.field("declaration") ?? node.field("value") else { return [] }
-            return [Work(node: child, context: context, rangeOwner: owner)]
+            // `export = expression` has an unfielded expression child in this grammar.
+            let exported = (node.field("declaration") ?? node.field("value")).map { [$0] } ?? node.children
+            return exported.map { Work(node: $0, context: context, rangeOwner: owner) }
         case "ambient_declaration":
             return node.children.map {
                 Work(node: $0, context: context, rangeOwner: $0.kind == "statement_block" ? nil : owner)
@@ -86,11 +94,11 @@ struct TypeScriptSyntaxExtraction {
             guard context.members != .none else { return children(node, context: context) }
             return try propertyWork(work)
         case "class_body":
-            return children(node, context: Context(scopes: context.scopes, members: .classBody))
+            return classBodyWork(work)
         case "interface_body", "object":
             return children(node, context: Context(scopes: context.scopes, members: .objectBody))
         case "enum_body":
-            return try enumWork(work)
+            return enumWork(work)
         case "for_in_statement":
             if let keyword = node.field("kind"), let pattern = node.field("left") {
                 let offsets = keyword.start ..< (node.field("value")?.end ?? pattern.end)
@@ -142,12 +150,13 @@ struct TypeScriptSyntaxExtraction {
         let node = work.node
         var nested = Context(scopes: work.context.scopes)
         if let identifier = node.field("name"), isName(identifier), healthy(identifier) {
-            let header = headerRange(node, owner: work.rangeOwner ?? node)
+            let header = headerRange(node, owner: work.rangeOwner ?? node, decorators: work.decorators)
             try append(identifier, owner: work.rangeOwner ?? node, kind: kind,
-                       context: work.context, signature: header == nil ? nil : signature(node), header: header)
+                       context: work.context, signature: header == nil ? nil : signature(node), header: header,
+                       decorators: work.decorators)
             nested = work.context.nested(text(identifier))
         }
-        return node.children.map { child in
+        return work.decorators.map { Work(node: $0, context: work.context) } + node.children.map { child in
             let inCallable = same(child, node.field("body")) || same(child, node.field("parameters"))
             return Work(node: child, context: inCallable ? nested : Context(scopes: work.context.scopes))
         }
@@ -157,13 +166,18 @@ struct TypeScriptSyntaxExtraction {
         let node = work.node
         let owner = work.rangeOwner ?? node
         let declarators = node.children.filter { $0.kind == "variable_declarator" }
+        let bodies = declarators.compactMap { callableValue($0.field("value"))?.field("body") }
+        // The shared binding header includes initializers, but body-only errors must not
+        // discard sound callable metadata. Damage elsewhere in the statement does.
+        let reliable = reliableSyntax([owner], excluding: bodies)
+        let header = headerRange(node, owner: owner)
         // All grouped bindings precede their initializer descendants, sharing the statement range.
         for declarator in declarators {
             guard let pattern = declarator.field("name") else { continue }
             for identifier in bindings(pattern) {
                 let callable = pattern.kind == "identifier" ? callableValue(declarator.field("value")) : nil
                 try append(identifier, owner: owner, kind: .variable, context: work.context,
-                           signature: callable.flatMap(signature), header: headerRange(node, owner: owner))
+                           signature: reliable ? callable.flatMap(signature) : nil, header: header)
             }
         }
         return declarators.flatMap { declarator in
@@ -185,34 +199,62 @@ struct TypeScriptSyntaxExtraction {
             return children(node, context: Context(scopes: work.context.scopes))
         }
         let callable = callableValue(node.field("value"))
+        let reliable = reliableSyntax(work.decorators + [node], excluding: callable?.field("body").map { [$0] } ?? [])
         try append(identifier, owner: node, kind: .property, context: work.context,
-                   signature: callable.flatMap(signature), header: headerRange(node, owner: node))
-        return children(node, context: work.context.nested(text(identifier)))
+                   signature: reliable ? callable.flatMap(signature) : nil,
+                   header: headerRange(node, owner: node, decorators: work.decorators), decorators: work.decorators)
+        return work.decorators.map { Work(node: $0, context: work.context) } + node.children.map { child in
+            Work(node: child, context: child.kind == "decorator" ? work.context : work.context.nested(text(identifier)))
+        }
     }
 
-    private mutating func enumWork(_ work: Work) throws -> [Work] {
+    private func classBodyWork(_ work: Work) -> [Work] {
+        let context = Context(scopes: work.context.scopes, members: .classBody)
         var result: [Work] = []
-        let names = work.node.children(inField: "name")
+        var decorators: [SyntaxNode] = []
         for child in work.node.children {
+            if child.kind == "decorator" {
+                decorators.append(child)
+                continue
+            }
+            if child.kind == "comment" {
+                continue
+            }
+            if ["method_definition", "method_signature", "abstract_method_signature", "public_field_definition"]
+                .contains(child.kind)
+            {
+                result.append(Work(node: child, context: context, decorators: decorators))
+            } else {
+                // Do not carry orphaned decorators across a separator or recovery node.
+                result += decorators.map { Work(node: $0, context: context) }
+                result.append(Work(node: child, context: context))
+            }
+            decorators = []
+        }
+        return result + decorators.map { Work(node: $0, context: context) }
+    }
+
+    private func enumWork(_ work: Work) -> [Work] {
+        let names = work.node.children(inField: "name")
+        return work.node.children.map { child in
             let identifier = child.kind == "enum_assignment" ? child.field("name")
                 : names.contains(where: { same(child, $0) }) ? child : nil
-            var context = work.context
-            if let identifier, isName(identifier), healthy(identifier) {
-                try append(identifier, owner: child, kind: .enumCase, context: context,
-                           header: headerRange(child, owner: child))
-                context = context.nested(text(identifier))
-            }
-            result.append(Work(node: child, context: context))
+            // Emit each member when popped, before traversing its initializer and next sibling.
+            return Work(
+                node: child,
+                context: work.context,
+                enumIdentifier: identifier.flatMap { isName($0) ? $0 : nil }
+            )
         }
-        return result
     }
 
     private mutating func append(_ identifier: SyntaxNode, owner: SyntaxNode,
                                  kind: Declaration.Kind, context: Context, signature: CallableSignature? = nil,
-                                 header: SourceRange?, lookupName: String? = nil, fullOffsets: Range<Int>? = nil) throws
+                                 header: SourceRange?, lookupName: String? = nil, fullOffsets: Range<Int>? = nil,
+                                 decorators: [SyntaxNode] = []) throws
     {
         guard healthy(identifier), let identifierRange = snapshot.range(identifier.offsets),
-              let start = boundary(owner, fromEnd: false), let end = boundary(owner, fromEnd: true),
+              let start = boundary(decorators.first ?? owner, fromEnd: false), let end = boundary(owner, fromEnd: true),
               let full = snapshot.range(fullOffsets ?? start ..< end) else { return }
         let name = text(identifier)
         try declarations.append(Declaration(

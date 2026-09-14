@@ -18,6 +18,10 @@ ordering are asserted through the shared backend contract.
 | `wrapper-recovery.ts` | Malformed export wrapper invalidates callable metadata; missing body closer preserves a sound header |
 | `dialect.ts` | Angle-bracket assertion parses in TypeScript but is JSX recovery in TSX |
 | `incomplete.ts` + JSON | Unterminated class/method collapses to `ERROR`; only the local binding survives without inferred scopes |
+| `export-assignments.ts` | Direct and nested declarations in `export =` expressions; export references do not become declarations |
+| `decorated-members.ts` | Stacked method/accessor decorators, field decorators, nested decorator declarations, damaged decorators, Unicode, and LF/CRLF snapshot variants |
+| `binding-recovery.ts` | Damaged binding annotations and missing wrapper tokens invalidate signatures; callable body errors preserve metadata, including grouped bindings |
+| `enum-order.ts` | Enum initializer descendants precede later members, including ambiguous short-name matching order |
 
 Integration tests additionally cover empty input, embedded NULs without truncation,
 explicit language rejection, and simultaneous reuse of one extractor for both

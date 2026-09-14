@@ -54,6 +54,10 @@ Destructuring's shared initializer has no single binding scope. Grouped variable
 are emitted before initializer descendants; otherwise parents precede descendants,
 and siblings follow source order.
 
+Export assignment expressions (`export = expression`) are traversed too, including
+direct named class/function expressions and declarations nested inside closures.
+Exporting an existing reference does not create another declaration.
+
 Destructuring includes actual binding identifiers through array/object patterns,
 renaming, defaults, and rest patterns. Property keys and assignment references do
 not become bindings. Parameters (including constructor parameter properties),
@@ -112,9 +116,15 @@ non-BMP characters, and LF/CRLF bytes remain unchanged.
 
 All Tree-sitter error and missing-token diagnostics are retained in tree order,
 including syntax intentionally omitted from declaration extraction. A malformed
-header loses both header and signature; healthy names remain queryable when a
+callable header loses both header and signature; healthy names remain queryable when a
 declaration node survives. Errors confined to a recognized body preserve a sound
-header/signature. No loose-token or regex fallback rebuilds lost declarations.
+header/signature. Attached method/accessor decorators participate in header recovery;
+a damaged decorator invalidates that member's header/signature.
+For callable initializers, damage outside the recognized initializer bodies invalidates
+signatures on the binding/property (including a shared grouped-binding header).
+Body-only damage preserves the initializer's signature, although its binding header
+is nil because that range would include the damaged body.
+No loose-token or regex fallback rebuilds lost declarations.
 `incomplete.ts` records an unterminated class/method collapsing into one `ERROR`:
 only its recoverable local variable remains, with no inferred enclosing names.
 

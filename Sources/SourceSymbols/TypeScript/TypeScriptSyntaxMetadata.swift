@@ -50,7 +50,7 @@ extension TypeScriptSyntaxExtraction {
         return nil
     }
 
-    func headerRange(_ node: SyntaxNode, owner: SyntaxNode) -> SourceRange? {
+    func headerRange(_ node: SyntaxNode, owner: SyntaxNode, decorators: [SyntaxNode] = []) -> SourceRange? {
         let body = node.field("body")
         let syntax = node.children.prefix { !same($0, body) }
             .filter { !["comment", ";", "=>"].contains($0.kind) }
@@ -59,21 +59,35 @@ extension TypeScriptSyntaxExtraction {
         } else {
             syntax.last.flatMap { boundary($0, fromEnd: true) }
         }
-        guard let start = boundary(owner, fromEnd: false), let end, end >= start else { return nil }
+        guard let start = boundary(decorators.first ?? owner, fromEnd: false), let end, end >= start,
+              reliableSyntax(decorators + [owner], through: end, excluding: body.map { [$0] } ?? [])
+        else { return nil }
+        return snapshot.range(start ..< end)
+    }
+
+    func reliableSyntax(_ nodes: [SyntaxNode], through end: Int? = nil, excluding excluded: [SyntaxNode] = []) -> Bool {
         // Inspect only the prefix; a recognized body's errors cannot damage a sound header.
-        var stack = [owner]
+        var stack = nodes
         while let child = stack.popLast() {
-            guard child.start <= end else { continue }
-            if same(child, body) || child.kind == "comment" {
+            if let end, child.start > end {
+                continue
+            }
+            if excluded.contains(where: { same(child, $0) }) || child.kind == "comment" {
+                continue
+            }
+            if !child.hasError, !child.isMissing, !child.isError {
                 continue
             }
             let children = child.children
             if child.isError || child.isMissing || (child.hasError && !children.contains(where: \.hasError)) {
-                return nil
+                return false
             }
-            stack.append(contentsOf: children.filter { $0.start < end || ($0.start == end && $0.isMissing) })
+            stack.append(contentsOf: children.filter {
+                guard let end else { return true }
+                return $0.start < end || ($0.start == end && $0.isMissing)
+            })
         }
-        return snapshot.range(start ..< end)
+        return true
     }
 
     func boundary(_ node: SyntaxNode, fromEnd: Bool) -> Int? {
