@@ -103,6 +103,38 @@ No methods are synthesized from `attr_reader`, `define_method`, `alias_method`,
 visibility analysis, inheritance lookup, ERB parsing, or complete Ruby-version
 conformance is claimed. A clean parse does not imply complete extraction.
 
+## Source-backed headers
+
+`headerRange` spans `def` through the parameters (or name for a parameterless
+method), retaining receiver syntax, defaults, and interior comments/whitespace.
+Bare and parenthesized parameters use their syntax-node endpoints. Endless-method
+`=` and the following expression are implementation syntax and excluded, as are
+separating semicolons, body statements, and `end`. Visibility calls remain outside
+the declaration. Class/module headers end after the path or superclass expression;
+singleton-class headers end after the receiver. Static aliases use their full
+syntax. Constant assignments have nil headers: this adapter does not expose a
+separate header for these initializer-only declarations.
+
+A header containing a heredoc has nil `headerRange`, since delayed text cannot
+reliably fit in one contiguous range without potentially including implementation
+syntax. A heredoc in the method body does not affect the header. Header ranges and
+structured signatures are independent: forwarding, destructuring, `**nil`, and
+aliases retain source headers with nil signatures, while a sound heredoc default
+can retain metadata with no source header.
+
+Header recovery uses the same syntactic boundary validation as method metadata.
+An error before a body separator invalidates the header; body errors after a
+closed parameter list or a newline/semicolon preserve it. Namespace headers also
+validate intervening syntax, so a damaged superclass cannot be silently discarded.
+Diagnostics and full ranges are retained independently. See
+[the shared API](API.md#source-backed-headers) for containment and snapshot rules.
+
+`headers.rb` and `header-recovery.rb` exercise these conventions with exact source
+slices and ranges, including LF/CRLF copies and Unicode. Issue #15's local
+`make check` passed with Swift 6.4 on macOS (64 tests across both targets, builds,
+lint, formatting, and the example). Hosted toolchains and additional platforms
+remain separate validation.
+
 ## Validation
 
 The permanent [Ruby corpus](../Tests/SourceSymbolsTests/Fixtures/Ruby/README.md)

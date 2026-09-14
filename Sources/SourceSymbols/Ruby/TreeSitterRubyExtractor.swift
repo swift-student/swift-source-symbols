@@ -128,7 +128,10 @@ private struct RubySyntaxExtraction {
             guard let path = node.field("name"), let names = constantPath(path, context: context),
                   let nameNode = path.kind == "constant" ? path : path.field("name") else { return context }
             guard try append(node, identifier: nameNode, name: text(nameNode), qualified: names.qualified,
-                             kind: .type, context: context, trailingEnd: trailingEnd) else { return context }
+                             kind: .type, context: context, trailingEnd: trailingEnd,
+                             headerRange: headerRange(node, through: node.field("superclass") ?? path,
+                                                      children: children))
+            else { return context }
             return Context(scopes: context.scopes + [names.spelling], namespace: names.qualified,
                            instanceOwner: names.qualified, selfReceiver: names.qualified)
         case "singleton_class":
@@ -137,7 +140,8 @@ private struct RubySyntaxExtraction {
             let name = "<< " + text(value)
             let qualified = context.qualify(name)
             guard try append(node, identifier: value, name: name, qualified: qualified,
-                             kind: .extensionScope, context: context, trailingEnd: trailingEnd) else { return context }
+                             kind: .extensionScope, context: context, trailingEnd: trailingEnd,
+                             headerRange: headerRange(node, through: value, children: children)) else { return context }
             return Context(scopes: context.scopes + [name], namespace: qualified,
                            singletonOwner: owner, selfReceiver: owner + ".singleton_class")
         case "method", "singleton_method":
@@ -158,7 +162,8 @@ private struct RubySyntaxExtraction {
             {
                 let name = nameNode.kind == "simple_symbol" ? String(text(nameNode).dropFirst()) : text(nameNode)
                 try append(node, identifier: nameNode, name: name, qualified: methodName(name, context: context),
-                           kind: .method, context: context, trailingEnd: trailingEnd)
+                           kind: .method, context: context, trailingEnd: trailingEnd,
+                           headerRange: headerRange(node, through: node, children: children))
             }
             return context
         default:
@@ -179,8 +184,10 @@ private struct RubySyntaxExtraction {
             qualified = methodName(name, context: context)
         }
         let signature = callableSignature(node, children: children)
+        let header = headerRange(node, through: node.field("parameters") ?? nameNode, children: children)
         guard try append(node, identifier: nameNode, name: name, qualified: qualified,
-                         kind: .method, signature: signature, context: context, trailingEnd: trailingEnd)
+                         kind: .method, signature: signature, context: context, trailingEnd: trailingEnd,
+                         headerRange: header)
         else { return context }
         // A nested def is retained lexically, without inferring the receiver of runtime self.
         return Context(scopes: context.scopes + [name], namespace: qualified,
@@ -190,7 +197,7 @@ private struct RubySyntaxExtraction {
     @discardableResult
     private mutating func append(_ node: SyntaxNode, identifier: SyntaxNode, name: String,
                                  qualified: String, kind: Declaration.Kind, signature: CallableSignature? = nil,
-                                 context: Context, trailingEnd: Int?) throws -> Bool
+                                 context: Context, trailingEnd: Int?, headerRange: SourceRange? = nil) throws -> Bool
     {
         guard !identifier.hasError, !identifier.isMissing, identifier.end > identifier.start,
               let identifierRange = snapshot.range(identifier.offsets),
@@ -200,14 +207,27 @@ private struct RubySyntaxExtraction {
         // Ruby uses method names directly for lookup; signatures do not invent a second spelling.
         try declarations.append(Declaration(name: name, qualifiedName: qualified, kind: kind,
                                             signature: signature, enclosingScopes: context.scopes,
-                                            identifierRange: identifierRange, declarationRange: declarationRange))
+                                            identifierRange: identifierRange, declarationRange: declarationRange,
+                                            headerRange: headerRange))
         return true
     }
 
-    private func callableSignature(_ node: SyntaxNode, children: [Work]) -> CallableSignature? {
-        guard let name = node.field("name") else { return nil }
+    private func headerRange(_ node: SyntaxNode, through last: SyntaxNode, children: [Work]) -> SourceRange? {
+        guard headerIsReliable(node, through: last, children: children) else { return nil }
+        let header = node.children.filter { $0.start < last.end && !isTrivia($0) }
+        guard !header.contains(where: { $0.hasError || $0.isMissing }) else { return nil }
+        var stack = header
+        while let child = stack.popLast() {
+            // A heredoc's delayed text cannot be included without potentially including a body.
+            guard child.kind != "heredoc_beginning" else { return nil }
+            stack.append(contentsOf: child.children)
+        }
+        return snapshot.range(node.start ..< last.end)
+    }
+
+    private func headerIsReliable(_ node: SyntaxNode, through last: SyntaxNode, children: [Work]) -> Bool {
         let list = node.field("parameters")
-        let headerEnd = list?.end ?? name.end
+        let headerEnd = last.end
         let body = node.field("body")
         let closingParenthesis = list?.children.last { !isTrivia($0) }
         let hasClosedParameters = closingParenthesis?.kind == ")" && closingParenthesis?.isMissing == false
@@ -231,9 +251,16 @@ private struct RubySyntaxExtraction {
             }
             // Delayed default expressions are header syntax even when their bodies lie after `end`.
             if child.hasError || child.isMissing || work.heredocs.contains(where: \.hasError) {
-                return nil
+                return false
             }
         }
+        return true
+    }
+
+    private func callableSignature(_ node: SyntaxNode, children: [Work]) -> CallableSignature? {
+        let list = node.field("parameters")
+        guard let last = list ?? node.field("name"),
+              headerIsReliable(node, through: last, children: children) else { return nil }
         guard let list else { return CallableSignature(parameters: []) }
         var parameters: [CallableSignature.Parameter] = []
         for parameter in list.children

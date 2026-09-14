@@ -7,6 +7,17 @@ struct Example {
 }
 """, language: .swift)
 let result = try TreeSitterSwiftExtractor().extract(from: snapshot)
+// Same-label overloads have distinct source-backed headers without consumer parsing.
+if case let .ambiguous(overloads) = DeclarationMatcher.match(
+    DeclarationQuery(name: .qualified("Example.run(value:)")), in: result.declarations
+) {
+    for declaration in overloads {
+        if let header = declaration.headerRange, let text = snapshot.text(in: header) {
+            print(text) // "func run(value: Int)" and "func run(value: String)"
+        }
+    }
+}
+
 /// Reuse this index when translating many declarations from the same snapshot.
 let positions = SourcePositionIndex(snapshot: snapshot)
 if case let .unique(declaration) = DeclarationMatcher.match(

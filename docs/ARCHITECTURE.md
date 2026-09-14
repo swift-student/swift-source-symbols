@@ -43,6 +43,12 @@ matching compares every represented field. It performs no language-specific
 overload resolution. Name-only and annotation-only queries intentionally preserve
 all candidates satisfying the supplied filters.
 
+Optional declaration headers are source ranges, not display strings or matching
+keys. The core validates snapshot ownership and nesting with identifier/full ranges;
+backends decide which syntax forms a reliable contiguous header and when it is
+unavailable. Consumer formatting and body-boundary interpretation never enter the
+shared matcher. New backends must document and test their header conventions.
+
 The core tests construct untyped positional, keyword, rest, and block parameter
 metadata and arbitrary lookup spellings without invoking a parser. Those tests
 validate representation and matching; the Ruby integration corpus separately

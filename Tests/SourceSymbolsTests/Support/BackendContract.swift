@@ -25,6 +25,7 @@ func expectSnapshotContract(_ result: ExtractionResult, from snapshot: SourceSna
     #expect(result.snapshot.language == snapshot.language)
     #expect(result.snapshot.text.utf8.elementsEqual(snapshot.text.utf8))
     let ranges = result.declarations.flatMap { [$0.identifierRange, $0.declarationRange] }
+        + result.declarations.compactMap(\.headerRange)
         + result.diagnostics.compactMap(\.range)
     for range in ranges {
         #expect(range.snapshotID == snapshot.id)
@@ -34,6 +35,12 @@ func expectSnapshotContract(_ result: ExtractionResult, from snapshot: SourceSna
         #expect(snapshot.range(utf16Offsets: utf16) == range)
     }
     for declaration in result.declarations {
+        if let header = declaration.headerRange {
+            #expect(header.utf8Offsets.lowerBound >= declaration.declarationRange.utf8Offsets.lowerBound)
+            #expect(header.utf8Offsets.upperBound <= declaration.declarationRange.utf8Offsets.upperBound)
+            #expect(header.utf8Offsets.lowerBound <= declaration.identifierRange.utf8Offsets.lowerBound)
+            #expect(header.utf8Offsets.upperBound >= declaration.identifierRange.utf8Offsets.upperBound)
+        }
         #expect(declaration.identifierRange.utf8Offsets.lowerBound >= declaration.declarationRange.utf8Offsets
             .lowerBound)
         #expect(declaration.identifierRange.utf8Offsets.upperBound <= declaration.declarationRange.utf8Offsets

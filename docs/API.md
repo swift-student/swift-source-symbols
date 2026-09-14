@@ -105,6 +105,62 @@ available. Method and property kinds apply in a type's member context; functions
 initializers, and accessors are local. Results follow syntax traversal order:
 parents before descendants, sibling nodes and grouped bindings in source order.
 
+## Source-backed headers
+
+`Declaration.headerRange` is an optional source range, independent of the identifier,
+full declaration range, and structured `signature`. Retrieve its original text with
+`snapshot.text(in: headerRange)`. It is bound to the same immutable snapshot,
+contained in `declarationRange`, and contains `identifierRange`; the declaration
+initializer rejects foreign or improperly nested ranges. All existing UTF-8,
+UTF-16, and source-position rules apply. Nil explicitly means the backend cannot
+provide a reliable contiguous header under its conventions, not an empty header.
+
+Headers start at the first declaration token and end after the last header token.
+Leading documentation, trailing comments/whitespace, and body delimiters are
+excluded. Interior whitespace, comments, Unicode, and LF/CRLF bytes remain exact.
+Boundaries come from syntax nodes; braces nested in attributes, default expressions,
+or closure types do not delimit declaration bodies. Consumers control whitespace
+presentation, truncation, qualification/context labels, and styling.
+
+| Backend / declaration | Header convention |
+| --- | --- |
+| Swift functions, initializers, deinitializers, subscripts | Excludes the function/accessor body; retains attributes, modifiers, generic syntax, labels/local names, annotations, defaults, effects, return syntax, constraints, and initializer `?`/`!` |
+| Swift types, protocols, extensions | Excludes the member body; retains inheritance and constraints |
+| Swift computed/observed properties and protocol property requirements | Excludes the accessor, observer, or `{ get set }` block |
+| Swift stored bindings, type aliases, associated types, enum cases, bodyless callables | Whole declaration syntax, including stored initializer expressions, raw values, and associated values |
+| Swift grouped bindings and enum cases | Each name shares the group's header; nil if an accessor precedes further bindings, since excluding it would require disjoint ranges |
+| Ruby methods, including singleton, bare-parameter, and endless forms | `def` through the parameter list or method name; excludes the body, separating `;`/`=`, and `end`; visibility wrappers are outside the declaration |
+| Ruby classes, modules, singleton classes | Through the namespace path, superclass expression, or singleton receiver; excludes member bodies and `end` |
+| Ruby static aliases | Whole alias declaration |
+| Ruby constant assignments | Nil: the adapter does not define a separate header for initializer-only declarations |
+| Ruby headers containing heredocs | Nil: delayed default/superclass/receiver text cannot reliably form one contiguous header without body syntax |
+
+A stored Swift closure initializer remains part of its binding's header; it can be
+large. Ruby methods with heredocs only in their implementation retain their header.
+Ruby forwarding, destructuring, keyword rejection, and aliases can have exact headers
+even though their structured signatures are unavailable. Conversely, a Ruby heredoc
+default can have structured metadata while its source-backed header is unavailable.
+Neither header availability nor header text affects matching.
+
+Missing or erroneous header syntax makes the header unavailable. Errors confined
+to a recognized body do not invalidate a sound header, including a missing closing
+body delimiter. Recovery can change declaration boundaries or omit a declaration
+entirely; the backend never rebuilds a header from loose tokens. Parse diagnostics
+remain independently available, even for declarations with headers and unique matches.
+
+```swift
+if case let .ambiguous(choices) = DeclarationMatcher.match(
+    .init(name: .qualified("Store.refresh(force:)")), in: result.declarations
+) {
+    for choice in choices {
+        if let header = choice.headerRange {
+            print(snapshot.text(in: header) ?? "")
+            // e.g. "func refresh(force: Bool)" or "func refresh(force: Int)"
+        }
+    }
+}
+```
+
 ## Callable matching
 
 `CallableSignature` is syntactic metadata rather than a semantic callable identity.

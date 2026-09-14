@@ -166,6 +166,7 @@ private struct SwiftSyntaxExtraction {
         guard let start = children.lazy.compactMap({ $0.syntaxBoundary(fromEnd: false) }).first,
               let end = children.reversed().lazy.compactMap({ $0.syntaxBoundary(fromEnd: true) }).first,
               let fullRange = snapshot.range(start ..< end) else { return [] }
+        let header = headerRange(node)
         return try names.compactMap { nameNode in
             guard !nameNode.isMissing, !nameNode.hasError, nameNode.end > nameNode.start,
                   let identifierRange = snapshot.range(nameNode.offsets) else { return nil }
@@ -180,8 +181,25 @@ private struct SwiftSyntaxExtraction {
                                    kind: kind, signature: signature,
                                    callableName: suffix.map { name + $0 },
                                    qualifiedCallableName: suffix.map { qualifiedName + $0 }, enclosingScopes: scopes,
-                                   identifierRange: identifierRange, declarationRange: fullRange)
+                                   identifierRange: identifierRange, declarationRange: fullRange,
+                                   headerRange: header)
         }
+    }
+
+    private func headerRange(_ node: SyntaxNode) -> SourceRange? {
+        // Only direct declaration children can delimit a body. Closures in attributes,
+        // defaults and stored initializers stay inside their expression nodes.
+        let children = node.children
+        let bodyKinds = ["function_body", "computed_property", "willset_didset_block",
+                         "protocol_property_requirements", "class_body", "enum_class_body", "protocol_body"]
+        let bodyIndex = children.firstIndex { bodyKinds.contains($0.kind) } ?? children.endIndex
+        // A group with bindings after an accessor cannot have one contiguous body-free header.
+        guard children.dropFirst(bodyIndex).dropFirst()
+            .allSatisfy({ $0.isTrivia || $0.kind == ";" }) else { return nil }
+        let header = children[..<bodyIndex].filter { !$0.isTrivia }
+        guard !header.contains(where: { $0.hasError || $0.isMissing }),
+              let first = header.first, let last = header.last else { return nil }
+        return snapshot.range(first.start ..< last.end)
     }
 
     private func bindingNames(_ pattern: SyntaxNode) -> [SyntaxNode] {
