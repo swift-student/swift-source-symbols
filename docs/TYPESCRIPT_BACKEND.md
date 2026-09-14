@@ -7,9 +7,10 @@ files too. Each call owns its parser and tree; extraction is synchronous, Sendab
 and entirely in memory. There is no filename detection, module loader, TypeScript
 compiler, Node.js dependency, or parser generation in consumer builds.
 
-The unmodified generated parsers, scanners, headers, MIT license, upstream commit,
-and shipped-file hashes are recorded in
-[the vendored grammar provenance](../Vendor/tree-sitter-typescript/PROVENANCE.md).
+The unmodified generated parsers, scanners, and headers come from the version-pinned
+upstream SwiftPM package. Both `TreeSitterTypeScript` and `TreeSitterTSX` modules
+belong to its single library product. The MIT license and upstream commit are
+recorded in [grammar dependencies](GRAMMARS.md).
 The existing parser ownership utilities are shared with Swift and Ruby; all
 TypeScript syntax, trivia, scope, range, and recovery policy lives in
 `Sources/SourceSymbols/TypeScript`.

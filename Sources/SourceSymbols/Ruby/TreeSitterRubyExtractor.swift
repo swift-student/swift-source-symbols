@@ -1,4 +1,4 @@
-import TreeSitterRubyGrammar
+import TreeSitterRuby
 
 /// Extracts per-file Ruby syntax using Tree-sitter Ruby 0.23.1 and runtime 0.25.10.
 /// Qualification describes syntax, not Ruby's runtime constant lookup or method dispatch.

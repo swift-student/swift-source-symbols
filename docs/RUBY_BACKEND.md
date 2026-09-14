@@ -6,9 +6,9 @@
 and tree; only immutable model values leave the call. No Ruby interpreter, generator,
 filesystem loading, or runtime evaluation is part of extraction.
 
-The unmodified grammar, scanner, headers, and MIT license are pinned under
-[Vendor/tree-sitter-ruby](../Vendor/tree-sitter-ruby/PROVENANCE.md), including the
-upstream commit and file hashes. Shared Tree-sitter ownership and borrowed-node
+The unmodified grammar, scanner, and headers come from the version-pinned upstream
+SwiftPM package. Its MIT license and upstream commit are recorded in
+[grammar dependencies](GRAMMARS.md). Shared Tree-sitter ownership and borrowed-node
 access live under `Sources/SourceSymbols/TreeSitter`; language policy remains
 in `Sources/SourceSymbols/Ruby`.
 

@@ -1,4 +1,5 @@
-import TreeSitterTypeScriptGrammar
+import TreeSitterTSX
+import TreeSitterTypeScript
 
 /// Extracts per-file TypeScript or TSX syntax with grammar 0.23.2 and runtime 0.25.10.
 /// Lookup paths describe lexical syntax, without module resolution or type checking.
