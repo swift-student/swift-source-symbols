@@ -9,8 +9,9 @@ releases, and place their executables on PATH. `make tools` verifies exact versi
 CI installs these same releases with verified SHA-256 checksums. Tool installation is maintainer setup and
 is not required by library consumers. The Tree-sitter runtime dependency is pinned
 in Package.swift; the grammars are vendored with [Swift provenance](Vendor/tree-sitter-swift/PROVENANCE.md),
-[Ruby provenance](Vendor/tree-sitter-ruby/PROVENANCE.md), and
-[Kotlin provenance](Vendor/tree-sitter-kotlin/PROVENANCE.md).
+[Ruby provenance](Vendor/tree-sitter-ruby/PROVENANCE.md),
+[Kotlin provenance](Vendor/tree-sitter-kotlin/PROVENANCE.md), and
+[TypeScript/TSX provenance](Vendor/tree-sitter-typescript/PROVENANCE.md).
 
 - `make build`: compile the library and example.
 - `make test`: run Swift Testing contract tests.

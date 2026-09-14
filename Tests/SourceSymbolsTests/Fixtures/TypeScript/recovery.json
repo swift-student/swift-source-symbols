@@ -1,0 +1,102 @@
+{
+  "declarations": [
+    {
+      "name": "bodyError",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        9,
+        18
+      ],
+      "declarationRange": [
+        0,
+        62
+      ]
+    },
+    {
+      "name": "headerError",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        72,
+        83
+      ],
+      "declarationRange": [
+        63,
+        101
+      ]
+    },
+    {
+      "name": "missing",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        111,
+        118
+      ],
+      "declarationRange": [
+        102,
+        135
+      ]
+    },
+    {
+      "name": "later",
+      "kind": "function",
+      "scopes": [],
+      "identifierRange": [
+        145,
+        150
+      ],
+      "declarationRange": [
+        136,
+        155
+      ]
+    },
+    {
+      "name": "Broken",
+      "kind": "type",
+      "scopes": [],
+      "identifierRange": [
+        162,
+        168
+      ],
+      "declarationRange": [
+        156,
+        207
+      ]
+    },
+    {
+      "name": "method",
+      "kind": "method",
+      "scopes": [
+        "Broken"
+      ],
+      "identifierRange": [
+        171,
+        177
+      ],
+      "declarationRange": [
+        171,
+        205
+      ]
+    }
+  ],
+  "diagnostics": [
+    [
+      44,
+      45
+    ],
+    [
+      89,
+      90
+    ],
+    [
+      132,
+      132
+    ],
+    [
+      201,
+      202
+    ]
+  ]
+}

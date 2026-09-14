@@ -70,3 +70,20 @@ if case let .unique(declaration) = DeclarationMatcher.match(
 for diagnostic in kotlinResult.diagnostics {
     print(diagnostic.message)
 }
+
+let typeScriptSnapshot = SourceSnapshot(text: """
+export function convert(value: string): string;
+export function convert(value: number): number;
+export function convert(value: string | number): string | number { return value; }
+""", language: .typescript)
+let typeScriptResult = try TreeSitterTypeScriptExtractor().extract(from: typeScriptSnapshot)
+if case let .unique(declaration) = DeclarationMatcher.match(
+    DeclarationQuery(name: .short("convert"), parameterTypes: ["number"]),
+    in: typeScriptResult.declarations
+), let header = declaration.headerRange {
+    print(typeScriptSnapshot.text(in: header) ?? "")
+}
+
+for diagnostic in typeScriptResult.diagnostics {
+    print(diagnostic.message)
+}

@@ -22,8 +22,15 @@ let package = Package(
                 exclude: ["LICENSE", "PROVENANCE.md", "SHA256SUMS"],
                 sources: ["src/parser.c", "src/scanner.c"], publicHeadersPath: "include",
                 cSettings: [.headerSearchPath("src")]),
+        .target(name: "TreeSitterTypeScriptGrammar", path: "Vendor/tree-sitter-typescript",
+                exclude: ["LICENSE", "PROVENANCE.md", "SHA256SUMS"],
+                sources: ["typescript/src/parser.c", "typescript/src/scanner.c",
+                          "tsx/src/parser.c", "tsx/src/scanner.c"], publicHeadersPath: "include",
+                cSettings: [.headerSearchPath("typescript/src")]),
         .target(name: "SourceSymbols", dependencies: [
-            "SourceSymbolsCore", "TreeSitterSwiftGrammar", "TreeSitterRubyGrammar", "TreeSitterKotlinGrammar", .product(
+            "SourceSymbolsCore", "TreeSitterSwiftGrammar", "TreeSitterRubyGrammar", "TreeSitterKotlinGrammar",
+            "TreeSitterTypeScriptGrammar",
+            .product(
                 name: "TreeSitter",
                 package: "tree-sitter"
             ),
