@@ -103,6 +103,10 @@ private struct KotlinSyntaxExtraction {
             return try append(node, identifier: identifier, kind: .property, context: context)
         case "property_declaration":
             return try extractProperty(node, context: context)
+        case "when_subject":
+            guard child(node, "val") != nil, let binding = child(node, "variable_declaration"),
+                  let identifier = child(binding, "identifier"), text(identifier) != "_" else { return context }
+            return try append(node, identifier: identifier, kind: .variable, context: context)
         default:
             return context
         }
@@ -133,8 +137,8 @@ private struct KotlinSyntaxExtraction {
     {
         guard !identifier.hasError, !identifier.isMissing, identifier.end > identifier.start,
               let identifierRange = snapshot.range(identifier.offsets),
-              let start = syntaxBoundary(node, fromEnd: false),
-              let end = syntaxBoundary(node, fromEnd: true),
+              let start = syntaxToken(in: declarationChildren(node), fromEnd: false)?.start,
+              let end = syntaxToken(in: declarationChildren(node), fromEnd: true)?.end,
               let fullRange = snapshot.range(start ..< end) else { return context }
         let name = suppliedName ?? unescape(text(identifier))
         let lookup = receiver.map { $0 + "." + name } ?? name
@@ -148,13 +152,40 @@ private struct KotlinSyntaxExtraction {
     }
 
     private func headerRange(_ node: SyntaxNode) -> SourceRange? {
+        guard !hasDetachedInitializerError(node) else { return nil }
         let boundaries = ["class_body", "enum_class_body", "function_body", "block", "getter", "setter"]
-        let header = node.children.prefix { !boundaries.contains($0.kind) }.filter { !isTrivia($0) && $0.kind != ";" }
+        let header = declarationChildren(node).prefix { !boundaries.contains($0.kind) }
+            .filter { !isTrivia($0) && $0.kind != ";" }
         guard !header.isEmpty, !header.contains(where: { $0.hasError || $0.isMissing }),
               let first = header.first, let last = header.last,
               let start = syntaxBoundary(first, fromEnd: false),
               let end = syntaxBoundary(last, fromEnd: true) else { return nil }
         return snapshot.range(start ..< end)
+    }
+
+    private func declarationChildren(_ node: SyntaxNode) -> [SyntaxNode] {
+        // The when parentheses enclose the subject expression, not its val declaration.
+        node.children.filter { node.kind != "when_subject" || ($0.kind != "(" && $0.kind != ")") }
+    }
+
+    private func hasDetachedInitializerError(_ node: SyntaxNode) -> Bool {
+        guard ["property_declaration", "class_parameter"].contains(node.kind),
+              !node.children.contains(where: { [";", "getter", "setter"].contains($0.kind) }) else { return false }
+        var end = node.end
+        var sibling = node.nextSibling
+        while let next = sibling {
+            // Kotlin can hide an explicit statement separator between sibling nodes.
+            guard !bytes[end ..< next.start].contains(59) else { return false }
+            if isTrivia(next) {
+                end = next.end
+                sibling = next.nextSibling
+                continue
+            }
+            guard next.isError, let token = syntaxToken(in: [next], fromEnd: false) else { return false }
+            // Recovery may detach a missing stored/delegated initializer from its owner.
+            return ["=", "by"].contains(text(token))
+        }
+        return false
     }
 
     private func callableSignature(_ node: SyntaxNode) -> CallableSignature? {
@@ -205,8 +236,15 @@ private struct KotlinSyntaxExtraction {
     private func receiver(_ node: SyntaxNode, before name: SyntaxNode) -> String? {
         // Receiver nodes precede the name/binding, while result types follow it.
         let types = ["user_type", "nullable_type", "parenthesized_type", "dynamic"]
-        return node.children.first { $0.end <= name.start && types.contains($0.kind) && !$0.hasError }
-            .map(lookupSpelling)
+        let children = node.children.filter { !isTrivia($0) }
+        guard let index = children.firstIndex(where: {
+            $0.end <= name.start && types.contains($0.kind) && !$0.hasError
+        }) else { return nil }
+        // The grammar can expose receiver modifiers beside the type rather than inside it.
+        let start = index > 0 && children[index - 1].kind == "type_modifiers" ? index - 1 : index
+        let receiver = children[start ... index]
+        guard !receiver.contains(where: \.hasError) else { return nil }
+        return receiver.map(lookupSpelling).joined()
     }
 
     private func child(_ node: SyntaxNode, _ kind: String) -> SyntaxNode? {
@@ -218,12 +256,16 @@ private struct KotlinSyntaxExtraction {
     }
 
     private func syntaxBoundary(_ node: SyntaxNode, fromEnd: Bool) -> Int? {
-        var stack = [node]
+        syntaxToken(in: [node], fromEnd: fromEnd).map { fromEnd ? $0.end : $0.start }
+    }
+
+    private func syntaxToken(in nodes: [SyntaxNode], fromEnd: Bool) -> SyntaxNode? {
+        var stack = fromEnd ? nodes : nodes.reversed()
         while let candidate = stack.popLast() {
             guard !isTrivia(candidate), !candidate.isMissing, candidate.end > candidate.start else { continue }
             let children = candidate.children
             if children.isEmpty {
-                return fromEnd ? candidate.end : candidate.start
+                return candidate
             }
             stack.append(contentsOf: fromEnd ? children : children.reversed())
         }

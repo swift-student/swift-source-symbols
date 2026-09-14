@@ -39,6 +39,11 @@ struct SyntaxNode {
         (0 ..< ts_node_child_count(raw)).map { SyntaxNode(raw: ts_node_child(raw, $0)) }
     }
 
+    var nextSibling: SyntaxNode? {
+        let sibling = ts_node_next_sibling(raw)
+        return ts_node_is_null(sibling) ? nil : SyntaxNode(raw: sibling)
+    }
+
     func field(_ name: String) -> SyntaxNode? {
         let child = name.withCString { ts_node_child_by_field_name(raw, $0, UInt32(name.utf8.count)) }
         return ts_node_is_null(child) ? nil : SyntaxNode(raw: child)

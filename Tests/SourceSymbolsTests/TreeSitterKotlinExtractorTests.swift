@@ -247,3 +247,114 @@ func kotlinUnicodeRangesAndPositionsRemainSnapshotBound(name: String) throws {
     #expect(damaged.signature == nil && damaged.headerRange == nil)
     #expect(result.diagnostics.map { $0.range?.utf8Offsets } == [23 ..< 24])
 }
+
+@Test func kotlinReceiverModifiersDistinguishQualifiedFunctionsAndProperties() throws {
+    let snapshot = try kotlinFixture("receiver-modifiers")
+    let result = try TreeSitterKotlinExtractor().extract(from: snapshot)
+    #expect(result.diagnostics.isEmpty)
+    try expectSnapshotContract(result, from: snapshot)
+    #expect(result.declarations.map(\.qualifiedName) == [
+        "receivers.suspend(()->Unit).run", "receivers.(()->Unit).run", "receivers.suspend(()->Unit).run",
+        "receivers.@receiver:Mark(String).annotated", "receivers.suspend(()->Unit).ready", "receivers.(()->Unit).ready",
+    ])
+    let runs = kotlinCandidates("run", in: result)
+    #expect(runs.allSatisfy { $0.signature?.effects == [] })
+    #expect(runs.map { $0.signature?.parameters.map(\.typeSyntax) } == [[], [], ["Int"]])
+    #expect(runs.first?.headerRange.flatMap(snapshot.text(in:)) == "fun suspend /* receiver */ (() -> Unit).run()")
+    expectMatches(.init(name: .qualified("receivers.suspend(()->Unit).run")), in: result,
+                  identifierOffsets: [59 ..< 62, 121 ..< 124])
+    expectMatches(.init(name: .qualified("receivers.suspend(()->Unit).run"), parameterTypes: []), in: result,
+                  identifierOffsets: [59 ..< 62])
+    expectMatches(.init(name: .qualified("receivers.(()->Unit).run")), in: result,
+                  identifierOffsets: [86 ..< 89])
+    expectMatches(.init(name: .qualified("receivers.suspend(()->Unit).ready")), in: result,
+                  identifierOffsets: [232 ..< 237])
+}
+
+@Test(arguments: ["=", "by"])
+func kotlinDetachedInitializerErrorsInvalidateOnlyTheirPropertyHeaders(introducer: String) throws {
+    let fixture = try kotlinFixture("detached-initializers")
+    let snapshot = SourceSnapshot(text: fixture.text.replacingOccurrences(of: "= ;", with: "\(introducer) ;"),
+                                  language: .kotlin)
+    let result = try TreeSitterKotlinExtractor().extract(from: snapshot)
+    try expectSnapshotContract(result, from: snapshot)
+    #expect(result.declarations.map(\.qualifiedName) == [
+        "stored", "after",
+    ])
+    #expect(result.declarations.map { $0.headerRange.flatMap(snapshot.text(in:)) } == [
+        nil, "fun after()",
+    ])
+    #expect(result.diagnostics.map { $0.range.flatMap(snapshot.text(in:)) } == [introducer])
+}
+
+@Test func kotlinRecoverySeparatorsAndBodiesPreserveSoundHeaders() throws {
+    let cases: [(String, [String], [String?], String)] = [
+        ("val separated: Int; =\n", ["separated"], ["val separated: Int"], "=\n"),
+        ("fun body() {\n    val local: Int =\n}\n", ["body", "body.local"], ["fun body()", nil], "="),
+        ("val computed: Int\n    get() {\n        val broken: Int =\n    }\n",
+         ["computed", "computed.broken"], ["val computed: Int", nil], "="),
+        ("fun functionBody(value: Int) =\n", ["functionBody"], ["fun functionBody(value: Int)"], "="),
+        ("class Parameters(val broken: Int = , val healthy: Int = 1)\n",
+         ["Parameters", "Parameters.broken", "Parameters.healthy"], [nil, nil, "val healthy: Int = 1"], "="),
+    ]
+    for (source, names, headers, diagnosticText) in cases {
+        let snapshot = SourceSnapshot(text: source, language: .kotlin)
+        let result = try TreeSitterKotlinExtractor().extract(from: snapshot)
+        try expectSnapshotContract(result, from: snapshot)
+        #expect(result.declarations.map(\.qualifiedName) == names, "Source: \(source)")
+        #expect(result.declarations.map { $0.headerRange.flatMap(snapshot.text(in:)) } == headers, "Source: \(source)")
+        #expect(
+            result.diagnostics.map { $0.range.flatMap(snapshot.text(in:)) } == [diagnosticText],
+            "Source: \(source)"
+        )
+        if let function = kotlinCandidates("functionBody", in: result).first {
+            #expect(function.signature?.parameters.map(\.typeSyntax) == ["Int"])
+        }
+        if let type = kotlinCandidates("Parameters", in: result).first {
+            #expect(type.signature == nil)
+        }
+    }
+}
+
+@Test(arguments: ["val x =\n", "val x by\n", "class C(val x: Int = )\n"])
+func kotlinDetachedInitializersAtEOFKeepDeclarationsAndDiagnostics(source: String) throws {
+    let snapshot = SourceSnapshot(text: source, language: .kotlin)
+    let result = try TreeSitterKotlinExtractor().extract(from: snapshot)
+    try expectSnapshotContract(result, from: snapshot)
+    #expect(!result.diagnostics.isEmpty)
+    let property = try #require(kotlinCandidates("x", in: result).first)
+    #expect(property.headerRange == nil)
+    #expect(snapshot.text(in: property.identifierRange) == "x")
+}
+
+@Test(arguments: ["\n", "\r\n"])
+func kotlinWhenSubjectsPreserveBindingsInitializerScopesAndSourceRanges(newline: String) throws {
+    let fixture = try kotlinFixture("when-subjects")
+    let snapshot = SourceSnapshot(text: fixture.text.replacingOccurrences(of: "\n", with: newline), language: .kotlin)
+    let result = try TreeSitterKotlinExtractor().extract(from: snapshot)
+    #expect(result.diagnostics.isEmpty)
+    try expectSnapshotContract(result, from: snapshot)
+    #expect(result.declarations.map(\.qualifiedName) == [
+        "cases.outer", "cases.outer.café", "cases.outer.café.helper", "cases.outer.branch", "cases.outer.café",
+        "cases.stored", "cases.stored.local", "cases.Container", "cases.Container.stored",
+        "cases.Container.stored.memberSubject",
+    ])
+    #expect(result.declarations.map(\.kind) == [
+        .function, .variable, .function, .variable, .variable, .property, .variable, .type, .property, .variable,
+    ])
+    #expect(kotlinCandidates("helper", in: result).first?.enclosingScopes == ["outer", "café"])
+    #expect(kotlinCandidates("branch", in: result).first?.enclosingScopes == ["outer"])
+    let subjects = kotlinCandidates("café", in: result)
+    let expectedHeaders = [
+        "val `café` = run {\n        fun helper() = input\n        helper()\n    }",
+        "val `café` = 2",
+    ].map { $0.replacingOccurrences(of: "\n", with: newline) }
+    #expect(subjects.map { $0.headerRange.flatMap(snapshot.text(in:)) } == expectedHeaders)
+    #expect(subjects.map { snapshot.text(in: $0.declarationRange) } == expectedHeaders)
+    #expect(subjects.map { snapshot.text(in: $0.identifierRange) } == ["`café`", "`café`"])
+    let identifiers = newline == "\n" ? [53 ..< 60, 205 ..< 212] : [56 ..< 63, 216 ..< 223]
+    expectMatches(.init(name: .qualified("cases.outer.café")), in: result, identifierOffsets: identifiers)
+    for subject in subjects {
+        #expect(SourceSnapshot(text: snapshot.text, language: .kotlin).text(in: subject.declarationRange) == nil)
+    }
+}

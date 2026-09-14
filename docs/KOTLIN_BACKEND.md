@@ -16,7 +16,7 @@ parser and tree; the extractor is Sendable and can be reused concurrently.
 | Functions in a class/object/enum-entry member body | `method` |
 | Top-level and local functions | `function` |
 | Top-level/member `val` and `var`, including delegated and extension properties | `property` |
-| Local `val` and `var` | `variable` |
+| Local `val` and `var`, including `when (val subject = expression)` bindings | `variable` |
 | Primary-constructor `val`/`var` parameters | Separate `property` declarations spanning the parameter syntax |
 | Secondary constructors | `initializer` named `constructor`, with the keyword as identifier |
 | `init` blocks | `initializer` named `init`, with the keyword as identifier; no callable signature |
@@ -35,13 +35,19 @@ Package segments are not lexical scope components or separate declarations.
 Identifier ranges retain backticks; lookup names remove them. Extension receivers
 are included before the base name: `sample.List<T>.choose`, `sample.String.render`,
 and `sample.Int.render`. Receiver/package lookup spelling concatenates syntax tokens,
-omitting trivia and identifier backticks. Generic arguments and nullable markers
-remain part of receiver paths. No import, type-alias, dispatch, inherited-member,
+omitting trivia and identifier backticks. Generic arguments, nullable markers, and
+receiver modifiers remain part of receiver paths. For example, `suspend (() -> Unit)`
+becomes `suspend(()->Unit)`, distinct from `(()->Unit)`; receiver annotations are
+retained too. A receiver's `suspend` is not an effect of the extension function.
+No import, type-alias, dispatch, inherited-member,
 companion forwarding, or project-wide name resolution is performed.
 
 Named lexical scopes include types, functions, constructors, enum entries, and
 individual property initializers/accessors. An extension function's lexical
 component is its base name even though its lookup path includes the receiver.
+`when` subject bindings contribute a scope component only within their own
+initializer; declarations in the branches retain the surrounding scope. Subject
+references without `val` do not introduce declarations.
 Anonymous blocks, lambdas, and object expressions add no component; object member
 bodies still classify their members as methods/properties. Destructuring initializers
 have no single named owner. Separate blocks and repeated/overloaded declarations
@@ -68,6 +74,13 @@ constructor/init blocks, and property accessors. Constructor delegation calls st
 in the header. Stored/delegated property initializers and enum arguments stay in
 headers; enum member bodies do not. Nested braces in annotations/defaults/lambdas
 do not delimit the surrounding declaration's header.
+The full/header range of a `when` subject binding includes its annotations, `val`,
+name, type, and initializer, excluding the enclosing parentheses and `when` branches.
+When recovery detaches an initializer's `=` or `by` into an adjacent error node,
+the property's header is nil; this also applies to primary-constructor properties.
+The recovered declaration range stays on its available syntax node, and diagnostics
+retain the detached error. Explicit separators and accessor/function body errors
+do not invalidate an otherwise sound preceding header.
 
 All ranges are snapshot-bound, zero-based, half-open UTF-8 bytes, with no Unicode
 or newline normalization. The shared UTF-16 conversions and SourcePositionIndex

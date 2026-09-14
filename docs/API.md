@@ -291,15 +291,17 @@ ranges and are removed from lookup names. There are no extra callable aliases;
 overloads are narrowed using exact parameter-type or signature filters.
 
 Kotlin extracts types, objects/companions, functions/methods, properties/local
-variables, primary-constructor property parameters, secondary constructors, init
-blocks, enum entries, and type aliases. Primary constructor metadata is attached
+variables (including `when` subject bindings), primary-constructor property parameters,
+secondary constructors, init blocks, enum entries, and type aliases. Primary constructor metadata is attached
 to the class declaration. Parameters retain names as argument labels, annotation
 syntax, varargs, and defaults; signatures also retain generics, constraints,
 explicit return types, and `suspend`.
 
 Headers exclude class/function bodies and accessors, retaining stored/delegated
 initializers, defaults, and constructor delegation syntax. Recovered header errors
-make metadata unavailable; body errors preserve sound headers. See the
+make metadata unavailable, including initializer errors detached from property nodes;
+body errors preserve sound headers. Receiver lookup paths retain annotations and
+type modifiers such as `suspend`. See the
 [Kotlin backend contract](KOTLIN_BACKEND.md) for exact scope/header conventions,
 independently tested coverage, and pinned-grammar recovery limitations.
 
