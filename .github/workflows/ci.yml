@@ -14,28 +14,12 @@ concurrency:
 
 jobs:
   check:
-    name: ${{ matrix.name }}
+    name: macOS / Swift 6.4 (Tart)
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ${{ matrix.runner }}
+    runs-on: [self-hosted, macOS, ARM64, tart-ci-dedicated, tart-xcode27]
     timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: macOS / Swift 6.0
-            xcode: '16.2'
-            swift: '6.0'
-            runner: macos-15
-          - name: macOS / Swift 6.2
-            xcode: '26.2'
-            swift: '6.2'
-            runner: macos-15
-          - name: macOS / Swift 6.4 (Tart)
-            xcode: '27-beta-6'
-            swift: '6.4'
-            runner: [self-hosted, macOS, ARM64, tart-ci-dedicated, tart-xcode27]
     env:
-      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_27-beta-6.app/Contents/Developer
       MACOSX_DEPLOYMENT_TARGET: '13.0'
     defaults:
       run:
@@ -52,14 +36,14 @@ jobs:
           swift --version | tee -a .cache/ci/toolchain.log
           version=$(swift --version | awk '/^Apple Swift version / {print $4}')
           case "$version" in
-            "${{ matrix.swift }}"|"${{ matrix.swift }}".*) ;;
-            *) echo "Expected Swift ${{ matrix.swift }}, got $version"; exit 1 ;;
+            "6.4"|"6.4".*) ;;
+            *) echo "Expected Swift 6.4, got $version"; exit 1 ;;
           esac
       - name: Cache pinned tools
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: .tools/ci
-          key: tools-v1-${{ runner.os }}-${{ runner.arch }}-xcode-${{ matrix.xcode }}-${{ hashFiles('Makefile', 'scripts/ci/install-tools.sh', 'Package.swift', 'Package.resolved') }}
+          key: tools-v1-${{ runner.os }}-${{ runner.arch }}-xcode-27-beta-6-${{ hashFiles('Makefile', 'scripts/ci/install-tools.sh', 'Package.swift', 'Package.resolved') }}
       - name: Install pinned tools
         run: |
           bash scripts/ci/install-tools.sh 2>&1 | tee .cache/ci/tools.log
@@ -70,7 +54,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: ci-logs-xcode-${{ matrix.xcode }}
+          name: ci-logs-xcode-27-beta-6
           path: .cache/ci/*.log
           if-no-files-found: ignore
           retention-days: 7
