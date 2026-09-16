@@ -50,7 +50,11 @@ jobs:
           mkdir -p .cache/ci
           xcodebuild -version | tee .cache/ci/toolchain.log
           swift --version | tee -a .cache/ci/toolchain.log
-          swift --version | grep -F 'Apple Swift version ${{ matrix.swift }}.'
+          version=$(swift --version | awk '/^Apple Swift version / {print $4}')
+          case "$version" in
+            "${{ matrix.swift }}"|"${{ matrix.swift }}".*) ;;
+            *) echo "Expected Swift ${{ matrix.swift }}, got $version"; exit 1 ;;
+          esac
       - name: Cache pinned tools
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
