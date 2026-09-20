@@ -68,7 +68,8 @@ Position conversion does not inspect or suppress extraction diagnostics.
 `TreeSitterSwiftExtractor`, `TreeSitterRubyExtractor`, `TreeSitterKotlinExtractor`, and
 `TreeSitterTypeScriptExtractor` implement the synchronous,
 throwing, `Sendable` `DeclarationExtractor` protocol. They parse text directly as
-UTF-8 using Tree-sitter Swift 0.7.3, Ruby 0.23.1, Kotlin 1.1.0, or TypeScript/TSX 0.23.2 and runtime 0.25.10.
+UTF-8 using Tree-sitter Swift revision 28fe3a8 (post-0.7.3), Ruby 0.23.1, Kotlin 1.1.0,
+or TypeScript/TSX 0.23.2 and runtime 0.25.10.
 Each extractor accepts only its corresponding language; the TypeScript extractor
 accepts both `.typescript` and `.tsx`. Each call creates and disposes its own
 parser/tree; it may be called concurrently. No backend pointer escapes in a result.
