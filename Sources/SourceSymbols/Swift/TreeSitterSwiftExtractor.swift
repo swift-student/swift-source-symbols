@@ -1,6 +1,6 @@
 import TreeSitterSwiftGrammar
 
-/// Extracts per-file Swift syntax using Tree-sitter Swift 0.7.3 and runtime 0.25.10.
+/// Extracts per-file Swift syntax using Tree-sitter Swift revision 28fe3a8 and runtime 0.25.10.
 /// Each call owns its parser and tree. Results contain no backend handles.
 public struct TreeSitterSwiftExtractor: DeclarationExtractor {
     public init() {}

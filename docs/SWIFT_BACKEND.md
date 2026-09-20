@@ -14,15 +14,21 @@ regressions below address those cases without establishing full SourceKitten par
 
 The runtime is [Tree-sitter v0.25.10](https://github.com/tree-sitter/tree-sitter/releases/tag/v0.25.10),
 pinned exactly in Package.swift and recorded in Package.resolved. The grammar is
-[tree-sitter-swift 0.7.3](https://github.com/alex-pinkus/tree-sitter-swift/releases/tag/0.7.3).
-Its Git tag omits the generated parser, so the release archive's generated C parser,
-scanner, and required headers are packaged without modification in our separate
+[tree-sitter-swift revision 28fe3a8](https://github.com/alex-pinkus/tree-sitter-swift/commit/28fe3a8a85586aa297524fe6164140b9521dcaff),
+which includes the post-0.7.3 fix for `try await` in control-flow conditions.
+The generated C parser, scanner, and required headers are packaged in our separate
 [tree-sitter-swift-spm](https://github.com/swift-student/tree-sitter-swift-spm) repository.
-The generated parser is approximately 20 MiB of source. Archive/file checksums,
-tag commit, upstream paths, license, and update instructions are in that package's
-[provenance](https://github.com/swift-student/tree-sitter-swift-spm/blob/0.1.0/Vendor/tree-sitter-swift/PROVENANCE.md).
-SourceSymbols pins its package version; consumers need no parser generator or
+The generated parser is approximately 20 MiB of source. File checksums, the upstream
+commit, generator version, license, and reproduction instructions are in that package's
+[provenance](https://github.com/swift-student/tree-sitter-swift-spm/blob/0.1.1/Vendor/tree-sitter-swift/PROVENANCE.md).
+SourceSymbols requires package version 0.1.1; consumers need no parser generator or
 separate binary installation. See [grammar dependencies](GRAMMARS.md).
+
+`SwiftAsyncControlFlowTests` covers `try`, `try?`, and `try!` combined with `await`
+in `if`, `guard`, `while`, and `switch`. It checks clean diagnostics, qualified
+names, declaration ranges, and methods after async packet loops. The grammar fix
+keeps statement bodies from being consumed as trailing closures; no source rewriting
+or declaration-recovery workaround is used in this adapter.
 
 The small Swift adapter calls the C runtime directly, reads UTF-8 offsets, and
 walks declaration nodes. It uses neither a Swift wrapper dependency nor Tree-sitter

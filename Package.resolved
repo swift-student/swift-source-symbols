@@ -1,5 +1,5 @@
 {
-  "originHash" : "9c25b7f758ab06e58010f1c8a038754e0dbef40853313d9f6e60c1987bcf9942",
+  "originHash" : "b459eb0e7580325a27f94762fc7498ea05ed883844d5cb1afc64cf83dc35be2a",
   "pins" : [
     {
       "identity" : "tree-sitter",
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swift-student/tree-sitter-swift-spm",
       "state" : {
-        "revision" : "08aaa2537c108e8d6d0963744cdbdc180566856f",
-        "version" : "0.1.0"
+        "revision" : "c2863ed96a54dd4c11de064b16d0318fc190a049",
+        "version" : "0.1.1"
       }
     },
     {

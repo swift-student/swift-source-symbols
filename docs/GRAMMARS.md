@@ -9,7 +9,7 @@ SwiftPM is required during consumer builds.
 | Component | Package | Exact package version | Grammar/runtime upstream commit |
 | --- | --- | --- | --- |
 | Runtime | [tree-sitter/tree-sitter](https://github.com/tree-sitter/tree-sitter) | 0.25.10 | `da6fe9beb4f7f67beb75914ca8e0d48ae48d6406` |
-| Swift | [swift-student/tree-sitter-swift-spm](https://github.com/swift-student/tree-sitter-swift-spm) | 0.1.0 | `b8b22bffbb3441780e6471665bacfb263741c86a` |
+| Swift | [swift-student/tree-sitter-swift-spm](https://github.com/swift-student/tree-sitter-swift-spm) | `0.1.1` | `28fe3a8a85586aa297524fe6164140b9521dcaff` |
 | Ruby | [tree-sitter/tree-sitter-ruby](https://github.com/tree-sitter/tree-sitter-ruby) | 0.23.1 | `71bd32fb7607035768799732addba884a37a6210` |
 | Kotlin | [tree-sitter-grammars/tree-sitter-kotlin](https://github.com/tree-sitter-grammars/tree-sitter-kotlin) | 1.1.0 | `77dd60ea0a9003ce062c9728a513ffe1aaff8c82` |
 | TypeScript / TSX | [tree-sitter/tree-sitter-typescript](https://github.com/tree-sitter/tree-sitter-typescript) | 0.23.2 | `f975a621f4e7f532fe322e13c4f79495e0a7b2e7` |
@@ -18,12 +18,14 @@ SwiftPM is required during consumer builds.
 packaging commit. Consumers resolve their own graph; this repository's lockfile
 does not pin a consumer's transitive dependencies.
 
-Swift package 0.1.0 contains upstream grammar 0.7.3; packaging versions are
-independent of grammar versions. The Swift upstream Git tag omits its generated parser. Our source-only package
-preserves the unmodified release archive's parser, scanner, headers, license,
-archive hash, and individual file checksums under `Vendor/tree-sitter-swift`.
-Its [provenance](https://github.com/swift-student/tree-sitter-swift-spm/blob/0.1.0/Vendor/tree-sitter-swift/PROVENANCE.md)
-records how to reproduce and update the package. It supplies no runtime or queries.
+Swift package version 0.1.1 contains upstream's post-0.7.3
+fix for `try await` in control-flow conditions. The previous grammar could consume
+the body as a trailing closure, losing enclosing declarations and qualified names.
+Our source-only package generates ABI 15 output from the unmodified upstream revision
+with Tree-sitter CLI 0.25.10 and records each packaged file's checksum.
+Its [provenance](https://github.com/swift-student/tree-sitter-swift-spm/blob/0.1.1/Vendor/tree-sitter-swift/PROVENANCE.md)
+and regeneration script reproduce the parser and run upstream's complete parser corpus.
+It supplies no runtime or queries; consumer builds need no generator.
 
 The other grammars use upstream manifests and sources directly. Their manifests
 also declare `SwiftTreeSitter` for upstream tests and copy query resources. Our
