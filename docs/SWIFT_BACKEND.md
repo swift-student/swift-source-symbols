@@ -20,8 +20,8 @@ The generated C parser, scanner, and required headers are packaged in our separa
 [tree-sitter-swift-spm](https://github.com/swift-student/tree-sitter-swift-spm) repository.
 The generated parser is approximately 20 MiB of source. File checksums, the upstream
 commit, generator version, license, and reproduction instructions are in that package's
-[provenance](https://github.com/swift-student/tree-sitter-swift-spm/blob/21736defb28d3ac25aaf053bd8eb6a5ecd8b49ce/Vendor/tree-sitter-swift/PROVENANCE.md).
-SourceSymbols pins its packaging commit; consumers need no parser generator or
+[provenance](https://github.com/swift-student/tree-sitter-swift-spm/blob/0.1.1/Vendor/tree-sitter-swift/PROVENANCE.md).
+SourceSymbols requires package version 0.1.1; consumers need no parser generator or
 separate binary installation. See [grammar dependencies](GRAMMARS.md).
 
 `SwiftAsyncControlFlowTests` covers `try`, `try?`, and `try!` combined with `await`

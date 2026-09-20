@@ -8,7 +8,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/tree-sitter/tree-sitter", exact: "0.25.10"),
         .package(url: "https://github.com/swift-student/tree-sitter-swift-spm",
-                 revision: "21736defb28d3ac25aaf053bd8eb6a5ecd8b49ce"),
+                 exact: "0.1.1"),
         .package(url: "https://github.com/tree-sitter/tree-sitter-ruby", exact: "0.23.1"),
         .package(url: "https://github.com/tree-sitter-grammars/tree-sitter-kotlin", exact: "1.1.0"),
         .package(url: "https://github.com/tree-sitter/tree-sitter-typescript", exact: "0.23.2"),
